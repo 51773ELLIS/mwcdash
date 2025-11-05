@@ -36,9 +36,24 @@ def run_migrations():
                     pass
             
             print("Applying database migrations...")
-            upgrade()
-            print("✓ Database migrations completed successfully!")
-            print("✓ All data has been preserved.")
+            try:
+                upgrade()
+                print("✓ Database migrations completed successfully!")
+                print("✓ All data has been preserved.")
+            except Exception as upgrade_error:
+                # If upgrade fails due to SQLite NOT NULL constraint, try manual fix
+                if "Cannot add a NOT NULL column" in str(upgrade_error) or "NOT NULL" in str(upgrade_error):
+                    print("⚠️  Migration failed due to SQLite constraint. Trying manual fix...")
+                    try:
+                        from fix_migration import fix_migration
+                        if fix_migration():
+                            print("✓ Manual migration completed successfully!")
+                            return True
+                    except ImportError:
+                        print("⚠️  Manual fix script not available. You may need to run it manually.")
+                    except Exception as fix_error:
+                        print(f"⚠️  Manual fix also failed: {fix_error}")
+                raise upgrade_error
             return True
         except Exception as e:
             print(f"✗ Error running migrations: {e}")
