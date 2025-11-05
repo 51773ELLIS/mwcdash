@@ -4,13 +4,18 @@
 
 set -e  # Exit on error
 
-PROJECT_DIR="/home/pi/projects/revenue_dashboard"
+# Dynamically resolve project directory (script's location)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$SCRIPT_DIR"
 VENV_DIR="$PROJECT_DIR/venv"
 SERVICE_NAME="revenue_dashboard"
 
 echo "=========================================="
 echo "Starting deployment for Revenue Dashboard"
 echo "Time: $(date)"
+echo "=========================================="
+echo "Project Directory: $PROJECT_DIR"
+echo "Virtual Environment: $VENV_DIR"
 echo "=========================================="
 
 # Navigate to project directory

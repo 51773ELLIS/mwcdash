@@ -63,8 +63,8 @@ The application uses minimal resources and won't interfere with Homebridge opera
 ### 1. Clone Repository
 
 ```bash
-cd /home/pi/projects
-git clone <your-repo-url> revenue_dashboard
+cd ~/projects  # or your preferred projects directory
+git clone https://github.com/51773ELLIS/mwcdash.git revenue_dashboard
 cd revenue_dashboard
 ```
 
@@ -280,7 +280,7 @@ sudo journalctl -u revenue_dashboard -n 50
 If you encounter database errors after pulling updates:
 
 ```bash
-cd /home/pi/projects/revenue_dashboard
+cd ~/projects/revenue_dashboard  # or your project directory
 source venv/bin/activate
 python3 migrate_db.py
 sudo systemctl restart revenue_dashboard
@@ -292,7 +292,7 @@ This will update your database schema while preserving all your data.
 
 ```bash
 sudo systemctl stop revenue_dashboard
-cd /home/pi/projects/revenue_dashboard
+cd ~/projects/revenue_dashboard  # or your project directory
 # Backup first!
 cp database.db database.db.backup
 rm database.db

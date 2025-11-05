@@ -19,7 +19,7 @@ The `deploy.sh` script automatically runs migrations when you pull updates via t
 If you need to run migrations manually:
 
 ```bash
-cd /home/ellis/projects/revenue_dashboard
+cd ~/projects/revenue_dashboard  # or your project directory
 source venv/bin/activate
 python3 migrate_db.py
 ```

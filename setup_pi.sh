@@ -4,17 +4,22 @@
 
 set -e  # Exit on error
 
-PROJECT_DIR="/home/pi/projects/revenue_dashboard"
+# Detect user and set project directory dynamically
+USER_HOME="$HOME"
+PROJECT_DIR="$USER_HOME/projects/revenue_dashboard"
 REPO_URL="https://github.com/51773ELLIS/mwcdash.git"
 
 echo "=========================================="
 echo "Revenue Dashboard - Raspberry Pi Setup"
 echo "=========================================="
+echo "User Home: $USER_HOME"
+echo "Project Directory: $PROJECT_DIR"
+echo "=========================================="
 
 # Create projects directory if it doesn't exist
 echo "Creating projects directory..."
-mkdir -p /home/pi/projects
-cd /home/pi/projects
+mkdir -p "$USER_HOME/projects"
+cd "$USER_HOME/projects"
 
 # Clone repository if it doesn't exist
 if [ ! -d "$PROJECT_DIR" ]; then
