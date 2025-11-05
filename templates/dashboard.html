@@ -182,7 +182,11 @@ function filterByWorker() {
     const worker = document.getElementById('worker-select').value;
     const url = new URL(window.location.href);
     url.searchParams.set('worker', worker);
-    window.location.href = url.toString();
+    url.searchParams.set('page', '1'); // Reset to first page when filtering
+    // Update charts immediately without page reload
+    updateCharts(currentPeriod);
+    // Update URL without reload
+    window.history.pushState({}, '', url.toString());
 }
 
 function updateCharts(period) {
@@ -257,13 +261,26 @@ function updateHoursChart(data) {
 
 // Initialize charts on page load
 document.addEventListener('DOMContentLoaded', function() {
+    // Get worker filter from URL or dropdown
+    const urlParams = new URLSearchParams(window.location.search);
+    const workerParam = urlParams.get('worker') || 'all';
+    
+    // Set dropdown to match URL parameter
+    const workerSelect = document.getElementById('worker-select');
+    if (workerSelect) {
+        workerSelect.value = workerParam;
+    }
+    
+    // Initialize charts with current worker filter
     updateCharts('daily');
 });
 
 function changePerPage(value) {
     const url = new URL(window.location.href);
+    const worker = document.getElementById('worker-select')?.value || 'all';
     url.searchParams.set('per_page', value);
     url.searchParams.set('page', '1'); // Reset to first page
+    url.searchParams.set('worker', worker); // Preserve worker filter
     window.location.href = url.toString();
 }
 </script>
