@@ -67,11 +67,13 @@
             <small>Current month</small>
         </div>
         {% if target_days_per_month > 0 %}
-        <div class="stat-card {% if target_days_status == 'on_target' %}stat-card-highlight{% elif target_days_status == 'behind_target' %}stat-card-warning{% endif %}">
+        <div class="stat-card {% if target_days_status == 'on_target' or target_days_status == 'ahead' %}stat-card-highlight{% elif target_days_status == 'behind_target' %}stat-card-warning{% endif %}">
             <h3>Days Target Status</h3>
-            <p class="stat-value {% if target_days_status == 'on_target' %}stat-value-success{% elif target_days_status == 'behind_target' %}stat-value-warning{% endif %}">
+            <p class="stat-value {% if target_days_status == 'on_target' or target_days_status == 'ahead' %}stat-value-success{% elif target_days_status == 'behind_target' %}stat-value-warning{% endif %}">
                 {% if target_days_status == 'on_target' %}
                     ✓ On Target
+                {% elif target_days_status == 'ahead' %}
+                    ↑ Ahead
                 {% elif target_days_status == 'behind_target' %}
                     ⚠️ Behind Target
                 {% else %}
@@ -79,8 +81,8 @@
                 {% endif %}
             </p>
             <small>{{ days_worked_this_month }} / {{ target_days_per_month }} days worked</small>
-            {% if days_needed_for_goal is not none %}
-            <small>{{ days_needed_for_goal }} more days needed for goal</small>
+            {% if monthly_take_home_goal > 0 and days_needed_for_goal is not none %}
+            <small>{{ days_needed_for_goal }} days needed / {{ days_remaining_in_month }} days remaining</small>
             {% endif %}
         </div>
         {% endif %}

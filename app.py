@@ -369,10 +369,6 @@ def dashboard():
             days_needed_for_goal = max(0, math.ceil(days_needed_for_goal))
         else:
             days_needed_for_goal = None
-        
-        # If days needed exceeds days remaining, show as not achievable
-        if days_needed_for_goal is not None and days_needed_for_goal > days_remaining_in_month:
-            days_needed_for_goal = None  # Will display as "not achievable"
     
     # Calculate target days status
     target_days_status = None
@@ -381,13 +377,45 @@ def dashboard():
         target_days_per_month = 0
     
     if target_days_per_month > 0:
-        # Determine status based on days worked, target, and days needed for goal
-        if days_worked_this_month >= target_days_per_month:
-            target_days_status = 'on_target'
-        elif days_needed_for_goal is not None and days_needed_for_goal > days_remaining_in_month:
-            target_days_status = 'behind_target'
+        # Determine status by comparing days needed for goal vs days remaining
+        if monthly_take_home_goal > 0 and avg_daily_take_home_this_month > 0:
+            # Calculate days needed based on monthly take-home goal and average daily take-home
+            if remaining_take_home_needed > 0:
+                # Calculate days needed to achieve goal
+                days_needed_for_status = remaining_take_home_needed / avg_daily_take_home_this_month
+                days_needed_for_status = max(0, math.ceil(days_needed_for_status))
+                
+                # Compare days needed vs days remaining using percentages
+                if days_remaining_in_month > 0:
+                    days_needed_percent = (days_needed_for_status / days_remaining_in_month) * 100
+                    
+                    if days_needed_percent <= 70:  # Ahead: need less than 70% of remaining days
+                        target_days_status = 'ahead'
+                    elif days_needed_percent <= 100:  # On Track: need 70-100% of remaining days
+                        target_days_status = 'on_track'
+                    else:  # Behind: need more than 100% of remaining days
+                        target_days_status = 'behind_target'
+                else:
+                    # No days remaining in month
+                    if remaining_take_home_needed <= 0:
+                        target_days_status = 'on_target'
+                    else:
+                        target_days_status = 'behind_target'
+            else:
+                # Goal already achieved
+                target_days_status = 'on_target'
         else:
-            target_days_status = 'on_track'
+            # No goal set or no average, fall back to simple comparison
+            if days_worked_this_month >= target_days_per_month:
+                target_days_status = 'on_target'
+            else:
+                # Calculate progress through month
+                days_elapsed = today.day
+                expected_days_worked = (target_days_per_month * days_elapsed) / last_day_of_month
+                if days_worked_this_month >= expected_days_worked * 0.9:
+                    target_days_status = 'on_track'
+                else:
+                    target_days_status = 'behind_target'
     
     # P&L status
     profit_quota_met = take_home_amount >= profit_quota if profit_quota > 0 else None
