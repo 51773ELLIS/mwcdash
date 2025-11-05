@@ -13,11 +13,11 @@
         
         <div class="form-group">
             <label for="hours">Hours *</label>
-            <input type="number" id="hours" name="hours" step="0.1" min="0.1" value="{{ entry.hours if entry else '' }}" required>
+            <input type="number" id="hours" name="hours" step="0.1" min="0.1" value="{{ entry.hours if entry else 8 }}" required>
         </div>
         
         <div class="form-group">
-            <label for="revenue">Revenue ($) *</label>
+            <label for="revenue">Revenue ({{ settings.currency_symbol if settings else '$' }}) *</label>
             <input type="number" id="revenue" name="revenue" step="0.01" min="0" value="{{ entry.revenue if entry else '' }}" required>
         </div>
         

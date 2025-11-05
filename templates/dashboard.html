@@ -29,7 +29,7 @@
     <div class="stats-grid">
         <div class="stat-card">
             <h3>Total Revenue</h3>
-            <p class="stat-value">${{ "%.2f"|format(total_revenue) }}</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(total_revenue) }}</p>
         </div>
         <div class="stat-card">
             <h3>Total Hours</h3>
@@ -41,7 +41,7 @@
         </div>
         <div class="stat-card">
             <h3>Avg Daily Revenue</h3>
-            <p class="stat-value">${{ "%.2f"|format(avg_daily_revenue) }}</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(avg_daily_revenue) }}</p>
         </div>
         <div class="stat-card">
             <h3>Avg Hours/Day</h3>
@@ -49,16 +49,16 @@
         </div>
         <div class="stat-card">
             <h3>Take-Home</h3>
-            <p class="stat-value">${{ "%.2f"|format(take_home_amount) }}</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(take_home_amount) }}</p>
             <small>({{ settings.take_home_percent }}%)</small>
         </div>
         <div class="stat-card">
             <h3>Avg Daily Take-Home</h3>
-            <p class="stat-value">${{ "%.2f"|format(avg_daily_take_home) }}</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(avg_daily_take_home) }}</p>
         </div>
         <div class="stat-card">
             <h3>Avg Hourly Rate</h3>
-            <p class="stat-value">${{ "%.2f"|format(avg_hourly_rate) }}</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(avg_hourly_rate) }}</p>
         </div>
     </div>
 
@@ -67,15 +67,15 @@
         <div class="breakdown-grid">
             <div class="breakdown-item">
                 <span class="breakdown-label">Tax ({{ settings.tax_percent }}%)</span>
-                <span class="breakdown-value">${{ "%.2f"|format(tax_amount) }}</span>
+                <span class="breakdown-value">{{ settings.currency_symbol }}{{ "%.2f"|format(tax_amount) }}</span>
             </div>
             <div class="breakdown-item">
                 <span class="breakdown-label">Reinvest ({{ settings.reinvest_percent }}%)</span>
-                <span class="breakdown-value">${{ "%.2f"|format(reinvest_amount) }}</span>
+                <span class="breakdown-value">{{ settings.currency_symbol }}{{ "%.2f"|format(reinvest_amount) }}</span>
             </div>
             <div class="breakdown-item">
                 <span class="breakdown-label">Take-Home ({{ settings.take_home_percent }}%)</span>
-                <span class="breakdown-value">${{ "%.2f"|format(take_home_amount) }}</span>
+                <span class="breakdown-value">{{ settings.currency_symbol }}{{ "%.2f"|format(take_home_amount) }}</span>
             </div>
         </div>
     </div>
@@ -116,7 +116,7 @@
                 <tr>
                     <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
                     <td>{{ "%.1f"|format(entry.hours) }}</td>
-                    <td>${{ "%.2f"|format(entry.revenue) }}</td>
+                    <td>{{ settings.currency_symbol }}{{ "%.2f"|format(entry.revenue) }}</td>
                     <td>{{ entry.worker_name or '-' }}</td>
                     <td>
                         <a href="{{ url_for('add_entry', id=entry.id) }}" class="btn-link">Edit</a>
@@ -207,7 +207,7 @@ function updateRevenueChart(data) {
         data: {
             labels: data.labels,
             datasets: [{
-                label: 'Revenue ($)',
+                label: 'Revenue ({{ settings.currency_symbol }})',
                 data: data.revenue,
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',

@@ -77,6 +77,7 @@ class Settings(db.Model):
     reinvest_percent = db.Column(db.Float, default=0.0, nullable=False)
     take_home_percent = db.Column(db.Float, default=100.0, nullable=False)
     default_worker_id = db.Column(db.Integer, db.ForeignKey('workers.id'), nullable=True)
+    currency_symbol = db.Column(db.String(1), default='$', nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships

@@ -36,6 +36,26 @@
         </form>
     </div>
 
+    <!-- Currency Settings Section -->
+    <div class="settings-section">
+        <h2>Currency Settings</h2>
+        <p class="settings-description">Select your preferred currency symbol for displaying revenue and earnings.</p>
+        
+        <form method="POST" action="{{ url_for('settings') }}" class="currency-form">
+            <div class="form-group">
+                <label for="currency_symbol">Currency Symbol</label>
+                <select id="currency_symbol" name="currency_symbol" class="form-select" required>
+                    <option value="$" {% if settings.currency_symbol == '$' %}selected{% endif %}>$ (US Dollar)</option>
+                    <option value="£" {% if settings.currency_symbol == '£' %}selected{% endif %}>£ (British Pound)</option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" name="set_currency">Save Currency</button>
+            </div>
+        </form>
+    </div>
+
     <!-- Worker Management Section -->
     <div class="settings-section">
         <h2>Worker Management</h2>

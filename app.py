@@ -40,7 +40,8 @@ def init_db():
                 user_id=default_user.id,
                 tax_percent=25.0,
                 reinvest_percent=20.0,
-                take_home_percent=55.0
+                take_home_percent=55.0,
+                currency_symbol='$'
             )
             db.session.add(default_settings)
             db.session.commit()
@@ -101,7 +102,8 @@ def dashboard():
             user_id=current_user.id,
             tax_percent=0.0,
             reinvest_percent=0.0,
-            take_home_percent=100.0
+            take_home_percent=100.0,
+            currency_symbol='$'
         )
         db.session.add(settings)
         db.session.commit()
@@ -352,11 +354,11 @@ def add_entry():
             
             if hours <= 0:
                 flash('Hours must be greater than 0.', 'error')
-                return render_template('add_entry.html', entry=entry, workers=workers, default_worker_id=selected_worker_id)
+                return render_template('add_entry.html', entry=entry, workers=workers, default_worker_id=selected_worker_id, settings=settings)
             
             if revenue < 0:
                 flash('Revenue cannot be negative.', 'error')
-                return render_template('add_entry.html', entry=entry, workers=workers, default_worker_id=selected_worker_id)
+                return render_template('add_entry.html', entry=entry, workers=workers, default_worker_id=selected_worker_id, settings=settings)
             
             if entry:
                 # Update existing entry
@@ -417,7 +419,8 @@ def settings():
             user_id=current_user.id,
             tax_percent=0.0,
             reinvest_percent=0.0,
-            take_home_percent=100.0
+            take_home_percent=100.0,
+            currency_symbol='$'
         )
         db.session.add(settings_obj)
         db.session.commit()
