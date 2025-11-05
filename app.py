@@ -838,6 +838,7 @@ def settings():
                 daily_revenue_goal = safe_float(request.form.get('daily_revenue_goal', ''))
                 monthly_revenue_goal = safe_float(request.form.get('monthly_revenue_goal', ''))
                 monthly_take_home_goal = safe_float(request.form.get('monthly_take_home_goal', ''))
+                target_days_per_month = int(safe_float(request.form.get('target_days_per_month', '')))
                 profit_quota = safe_float(request.form.get('profit_quota', ''))
                 loss_quota = safe_float(request.form.get('loss_quota', ''))
                 
