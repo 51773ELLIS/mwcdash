@@ -675,6 +675,202 @@ body::before {
     background: rgba(239, 68, 68, 0.2);
 }
 
+/* Goals Section */
+.goals-section {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+}
+
+.goals-section h2 {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    font-size: 1.5rem;
+}
+
+.goals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.goal-card {
+    background: rgba(15, 23, 42, 0.8);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.goal-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.goal-card-warning {
+    border-color: var(--error-color);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.goal-header h3 {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.goal-status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+}
+
+.goal-status.goal-met {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success-color);
+}
+
+.goal-status.goal-close {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.goal-status.goal-pending {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--primary-color);
+}
+
+.goal-status.goal-exceeded {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--error-color);
+}
+
+.goal-progress {
+    margin-top: var(--spacing-sm);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: var(--spacing-xs);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-fill.profitability-fill {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.goal-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.goal-current {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.goal-target {
+    color: var(--text-muted);
+}
+
+.goal-percent {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.profitability-display {
+    width: 100%;
+}
+
+.profitability-value {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.875rem;
+}
+
+.profitability-rate {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.profitability-target {
+    color: var(--text-muted);
+}
+
+.profitability-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.quota-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.quota-current {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.quota-target {
+    color: var(--text-muted);
+}
+
+.quota-percent {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Form Row for Settings */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.form-hint {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
 /* Breakdown Section */
 .breakdown-section {
     background: rgba(30, 41, 59, 0.6);

@@ -56,7 +56,12 @@ def init_db():
                 tax_percent=25.0,
                 reinvest_percent=20.0,
                 take_home_percent=55.0,
-                currency_symbol='$'
+                currency_symbol='$',
+                daily_revenue_goal=0.0,
+                monthly_revenue_goal=0.0,
+                profitability_target=0.0,
+                profit_quota=0.0,
+                loss_quota=0.0
             )
             db.session.add(default_settings)
             db.session.commit()
@@ -118,7 +123,12 @@ def dashboard():
             tax_percent=0.0,
             reinvest_percent=0.0,
             take_home_percent=100.0,
-            currency_symbol='$'
+            currency_symbol='$',
+            daily_revenue_goal=0.0,
+            monthly_revenue_goal=0.0,
+            profitability_target=0.0,
+            profit_quota=0.0,
+            loss_quota=0.0
         )
         db.session.add(settings)
         db.session.commit()
@@ -268,7 +278,15 @@ def dashboard():
                          best_day_hours=best_day_hours,
                          worker_stats=worker_stats,
                          revenue_change=revenue_change,
-                         revenue_change_percent=revenue_change_percent)
+                         revenue_change_percent=revenue_change_percent,
+                         daily_revenue=daily_revenue,
+                         monthly_revenue=monthly_revenue,
+                         daily_goal_progress=daily_goal_progress,
+                         monthly_goal_progress=monthly_goal_progress,
+                         profitability_rate=profitability_rate,
+                         profitability_target_met=profitability_target_met,
+                         profit_quota_met=profit_quota_met,
+                         loss_quota_exceeded=loss_quota_exceeded)
 
 
 @app.route('/api/chart_data')

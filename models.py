@@ -68,7 +68,7 @@ class Worker(db.Model):
 
 
 class Settings(db.Model):
-    """User settings for percentage configuration"""
+    """User settings for percentage configuration and goals"""
     __tablename__ = 'settings'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -78,6 +78,14 @@ class Settings(db.Model):
     take_home_percent = db.Column(db.Float, default=100.0, nullable=False)
     default_worker_id = db.Column(db.Integer, db.ForeignKey('workers.id'), nullable=True)
     currency_symbol = db.Column(db.String(1), default='$', nullable=False)
+    
+    # Goal Settings
+    daily_revenue_goal = db.Column(db.Float, default=0.0, nullable=False)
+    monthly_revenue_goal = db.Column(db.Float, default=0.0, nullable=False)
+    profitability_target = db.Column(db.Float, default=0.0, nullable=False)  # Profit percentage target
+    profit_quota = db.Column(db.Float, default=0.0, nullable=False)  # Minimum profit amount
+    loss_quota = db.Column(db.Float, default=0.0, nullable=False)  # Maximum acceptable loss
+    
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
