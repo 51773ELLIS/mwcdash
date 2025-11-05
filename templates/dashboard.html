@@ -128,8 +128,9 @@
         </table>
         
         <!-- Pagination -->
-        {% if entries.pages > 1 %}
+        {% if entries.total > 0 %}
         <div class="pagination">
+            {% if entries.pages > 1 %}
             <div class="pagination-controls">
                 {% if entries.has_prev %}
                 <a href="{{ url_for('dashboard', page=entries.prev_num, worker=selected_worker, per_page=per_page) }}" class="btn btn-sm btn-outline">Previous</a>
@@ -157,6 +158,7 @@
                 <span class="btn btn-sm btn-outline disabled">Next</span>
                 {% endif %}
             </div>
+            {% endif %}
             
             <div class="pagination-per-page">
                 <label for="per-page-select">Per page:</label>
