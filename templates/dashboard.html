@@ -81,7 +81,7 @@
                 {% endif %}
             </p>
             <small>{{ days_worked_this_month }} / {{ target_days_per_month }} days worked</small>
-            {% if monthly_take_home_goal > 0 and days_needed_for_goal is not none %}
+            {% if settings.monthly_take_home_goal|default(0) > 0 and days_needed_for_goal is not none %}
             <small>{{ days_needed_for_goal }} days needed / {{ days_remaining_in_month }} days remaining</small>
             {% endif %}
         </div>
