@@ -8,9 +8,7 @@ This guide will help you deploy the Earnings Dashboard to your Raspberry Pi.
 
 1. **SSH into your Raspberry Pi:**
    ```bash
-   ssh pi@pi.local
-   # or
-   ssh pi@<raspberry-pi-ip>
+   ssh pi@192.168.1.88
    ```
 
 2. **Download and run the setup script:**
@@ -68,8 +66,9 @@ This guide will help you deploy the Earnings Dashboard to your Raspberry Pi.
 ## Access the Application
 
 Once deployed, access the dashboard at:
-- `http://pi.local:5050`
-- or `http://<raspberry-pi-ip>:5050`
+- `http://192.168.1.88:5050`
+
+**Note:** This application runs alongside Homebridge on the same Raspberry Pi. Both services can run simultaneously without conflicts.
 
 **Default Login:**
 - Username: `ellis`

@@ -46,6 +46,18 @@ A lightweight Flask web application designed to run on a Raspberry Pi, providing
 - Git
 - Systemd (included with Raspberry Pi OS)
 
+## Running Alongside Homebridge
+
+This application is designed to run alongside Homebridge on the same Raspberry Pi:
+
+- **Homebridge**: Typically runs on port 8581 (web UI) and 8087 (API)
+- **Earnings Dashboard**: Runs on port 5050
+- **No conflicts**: Both services use different ports and can run simultaneously
+- **Minimal footprint**: Lightweight Flask app with SQLite database
+- **Shared resources**: Both services run as systemd services independently
+
+The application uses minimal resources and won't interfere with Homebridge operations.
+
 ## Initial Setup
 
 ### 1. Clone Repository
@@ -101,7 +113,9 @@ sudo systemctl start revenue_dashboard
 sudo systemctl status revenue_dashboard
 ```
 
-The application should now be accessible at `http://pi.local:5050` on your local network.
+The application should now be accessible at `http://192.168.1.88:5050` on your local network.
+
+**Note:** This application runs alongside Homebridge on the same Raspberry Pi. Both services can run simultaneously without conflicts.
 
 ## Configuration
 
@@ -176,7 +190,7 @@ sudo systemctl enable webhook
 1. Go to your GitHub repository
 2. Navigate to **Settings** → **Webhooks**
 3. Click **Add webhook**
-4. Set the **Payload URL** to: `http://pi.local:9000/hooks/deploy-revenue-dashboard`
+4. Set the **Payload URL** to: `http://192.168.1.88:9000/hooks/deploy-revenue-dashboard`
 5. Set **Content type** to: `application/json`
 6. Set **Secret** to match the secret in `hooks.json`
 7. Select **Just the push event**
@@ -201,7 +215,7 @@ The webhook should trigger `deploy.sh`, which will:
 ### Accessing the Dashboard
 
 1. Open a web browser on a device connected to your local network
-2. Navigate to: `http://pi.local:5050`
+2. Navigate to: `http://192.168.1.88:5050`
 3. Log in with your credentials
 
 ### Adding Work Entries
@@ -266,7 +280,7 @@ rm database.db
 sudo systemctl start revenue_dashboard
 ```
 
-### Port Already in Use
+### Port Conflicts
 
 If port 5050 is already in use, modify `app.py`:
 
@@ -275,6 +289,13 @@ app.run(host='0.0.0.0', port=5051, debug=True)  # Change port
 ```
 
 And update the systemd service file accordingly.
+
+**Note:** If you're running Homebridge, check which ports it uses:
+```bash
+sudo netstat -tulpn | grep homebridge
+```
+
+Homebridge typically uses port 8581 for the web UI, so there should be no conflict with port 5050. Both services can run simultaneously without issues.
 
 ### Webhook Not Triggering
 

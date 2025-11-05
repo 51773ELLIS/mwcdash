@@ -8,6 +8,7 @@
       "match": {
         "type": "payload-hmac-sha256",
         "secret": "your-webhook-secret-here-change-this",
+        "note": "Webhook URL: http://192.168.1.88:9000/hooks/deploy-revenue-dashboard",
         "parameter": {
           "source": "header",
           "name": "X-Hub-Signature-256"
