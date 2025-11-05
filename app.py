@@ -128,6 +128,7 @@ def dashboard():
             currency_symbol='$',
             daily_revenue_goal=0.0,
             monthly_revenue_goal=0.0,
+            monthly_take_home_goal=0.0,
             profit_quota=0.0,
             loss_quota=0.0
         )
