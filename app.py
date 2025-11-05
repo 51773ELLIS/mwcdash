@@ -152,6 +152,10 @@ def dashboard():
     reinvest_amount = total_revenue * (settings.reinvest_percent / 100)
     take_home_amount = total_revenue * (settings.take_home_percent / 100)
     
+    # Calculate additional metrics
+    avg_daily_take_home = take_home_amount / entry_count if entry_count > 0 else 0.0
+    avg_hourly_rate = total_revenue / total_hours if total_hours > 0 else 0.0
+    
     # Get workers for filter dropdown
     workers = Worker.query.filter_by(user_id=current_user.id).order_by(Worker.name).all()
     
@@ -162,6 +166,8 @@ def dashboard():
                          entry_count=entry_count,
                          avg_daily_revenue=avg_daily_revenue,
                          avg_hours_per_day=avg_hours_per_day,
+                         avg_daily_take_home=avg_daily_take_home,
+                         avg_hourly_rate=avg_hourly_rate,
                          settings=settings,
                          tax_amount=tax_amount,
                          reinvest_amount=reinvest_amount,
