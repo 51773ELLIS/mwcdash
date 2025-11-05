@@ -651,6 +651,30 @@ body::before {
     font-size: 0.75rem;
 }
 
+.stat-card-highlight {
+    border: 2px solid var(--primary-color);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.trend-indicator {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.trend-up {
+    color: var(--success-color);
+    background: rgba(16, 185, 129, 0.2);
+}
+
+.trend-down {
+    color: var(--error-color);
+    background: rgba(239, 68, 68, 0.2);
+}
+
 /* Breakdown Section */
 .breakdown-section {
     background: rgba(30, 41, 59, 0.6);

@@ -158,6 +158,76 @@ def dashboard():
     avg_daily_take_home = take_home_amount / entry_count if entry_count > 0 else 0.0
     avg_hourly_rate = total_revenue / total_hours if total_hours > 0 else 0.0
     
+    # Advanced analytics
+    best_day = None
+    best_day_revenue = 0.0
+    best_day_hours = 0.0
+    
+    # Get worker breakdown
+    worker_stats = {}
+    worker_entries = Entry.query.filter_by(user_id=current_user.id).all()
+    if worker_filter != 'all':
+        worker_entries = [e for e in worker_entries if e.worker_name == worker_filter]
+    
+    for entry in worker_entries:
+        worker_name = entry.worker_name or 'Unassigned'
+        if worker_name not in worker_stats:
+            worker_stats[worker_name] = {'revenue': 0.0, 'hours': 0.0, 'count': 0}
+        worker_stats[worker_name]['revenue'] += entry.revenue
+        worker_stats[worker_name]['hours'] += entry.hours
+        worker_stats[worker_name]['count'] += 1
+        
+        # Track best day
+        if entry.revenue > best_day_revenue:
+            best_day_revenue = entry.revenue
+            best_day_hours = entry.hours
+            best_day = entry.date
+    
+    # Calculate trends (compare last 30 days vs previous 30 days)
+    if entry_count > 0:
+        end_date = date.today()
+        recent_start = end_date - timedelta(days=29)
+        previous_start = recent_start - timedelta(days=30)
+        
+        recent_query = Entry.query.filter(
+            Entry.user_id == current_user.id,
+            Entry.date >= recent_start,
+            Entry.date <= end_date
+        )
+        previous_query = Entry.query.filter(
+            Entry.user_id == current_user.id,
+            Entry.date >= previous_start,
+            Entry.date < recent_start
+        )
+        
+        if worker_filter != 'all':
+            recent_query = recent_query.filter(Entry.worker_name == worker_filter)
+            previous_query = previous_query.filter(Entry.worker_name == worker_filter)
+        
+        recent_revenue = db.session.query(func.sum(Entry.revenue)).filter(
+            Entry.user_id == current_user.id,
+            Entry.date >= recent_start,
+            Entry.date <= end_date
+        )
+        previous_revenue = db.session.query(func.sum(Entry.revenue)).filter(
+            Entry.user_id == current_user.id,
+            Entry.date >= previous_start,
+            Entry.date < recent_start
+        )
+        
+        if worker_filter != 'all':
+            recent_revenue = recent_revenue.filter(Entry.worker_name == worker_filter)
+            previous_revenue = previous_revenue.filter(Entry.worker_name == worker_filter)
+        
+        recent_rev = recent_revenue.scalar() or 0.0
+        previous_rev = previous_revenue.scalar() or 0.0
+        
+        revenue_change = recent_rev - previous_rev
+        revenue_change_percent = (revenue_change / previous_rev * 100) if previous_rev > 0 else 0.0
+    else:
+        revenue_change = 0.0
+        revenue_change_percent = 0.0
+    
     # Get workers for filter dropdown
     workers = Worker.query.filter_by(user_id=current_user.id).order_by(Worker.name).all()
     
@@ -177,7 +247,13 @@ def dashboard():
                          workers=workers,
                          selected_worker=worker_filter,
                          page=page,
-                         per_page=per_page)
+                         per_page=per_page,
+                         best_day=best_day,
+                         best_day_revenue=best_day_revenue,
+                         best_day_hours=best_day_hours,
+                         worker_stats=worker_stats,
+                         revenue_change=revenue_change,
+                         revenue_change_percent=revenue_change_percent)
 
 
 @app.route('/api/chart_data')
@@ -296,10 +372,18 @@ def chart_data():
         revenue_values.reverse()
         hours_values.reverse()
     
+    # Calculate additional chart metrics
+    avg_revenue_per_period = sum(revenue_values) / len([v for v in revenue_values if v > 0]) if any(v > 0 for v in revenue_values) else 0
+    max_revenue = max(revenue_values) if revenue_values else 0
+    min_revenue = min([v for v in revenue_values if v > 0]) if any(v > 0 for v in revenue_values) else 0
+    
     return jsonify({
         'labels': labels,
         'revenue': revenue_values,
-        'hours': hours_values
+        'hours': hours_values,
+        'avg_revenue': avg_revenue_per_period,
+        'max_revenue': max_revenue,
+        'min_revenue': min_revenue
     })
 
 

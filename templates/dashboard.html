@@ -30,6 +30,11 @@
         <div class="stat-card">
             <h3>Total Revenue</h3>
             <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(total_revenue) }}</p>
+            {% if revenue_change != 0 %}
+            <small class="trend-indicator {% if revenue_change > 0 %}trend-up{% else %}trend-down{% endif %}">
+                {% if revenue_change > 0 %}↑{% else %}↓{% endif %} {{ "%.1f"|format(abs(revenue_change_percent)) }}%
+            </small>
+            {% endif %}
         </div>
         <div class="stat-card">
             <h3>Total Hours</h3>
@@ -60,6 +65,13 @@
             <h3>Avg Hourly Rate</h3>
             <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(avg_hourly_rate) }}</p>
         </div>
+        {% if best_day %}
+        <div class="stat-card stat-card-highlight">
+            <h3>Best Day</h3>
+            <p class="stat-value">{{ best_day.strftime('%b %d') }}</p>
+            <small>{{ settings.currency_symbol }}{{ "%.2f"|format(best_day_revenue) }} / {{ "%.1f"|format(best_day_hours) }}h</small>
+        </div>
+        {% endif %}
     </div>
 
     <div class="breakdown-section">
@@ -89,7 +101,24 @@
             <h3>Hours Worked</h3>
             <canvas id="hoursChart"></canvas>
         </div>
+        <div class="chart-container">
+            <h3>Revenue vs Hours</h3>
+            <canvas id="revenueHoursChart"></canvas>
+        </div>
     </div>
+    
+    {% if worker_stats|length > 1 or (worker_stats|length == 1 and selected_worker == 'all') %}
+    <div class="charts-section">
+        <div class="chart-container">
+            <h3>Revenue by Worker</h3>
+            <canvas id="workerRevenueChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h3>Hours by Worker</h3>
+            <canvas id="workerHoursChart"></canvas>
+        </div>
+    </div>
+    {% endif %}
 
     <div class="recent-entries">
         <div class="entries-header">
@@ -214,6 +243,7 @@ function updateCharts(period) {
         .then(data => {
             updateRevenueChart(data);
             updateHoursChart(data);
+            updateRevenueHoursChart(data);
         })
         .catch(error => {
             console.error('Error fetching chart data:', error);
@@ -269,14 +299,223 @@ function updateHoursChart(data) {
         options: {
             responsive: true,
             maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(1) + 'h';
+                        }
+                    }
                 }
             }
         }
     });
 }
+
+function updateRevenueHoursChart(data) {
+    if (revenueHoursChart) {
+        revenueHoursChart.destroy();
+    }
+    const ctx = document.getElementById('revenueHoursChart');
+    if (!ctx) return;
+    
+    revenueHoursChart = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Revenue ({{ settings.currency_symbol }})',
+                data: data.revenue,
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                yAxisID: 'y',
+                tension: 0.1
+            }, {
+                label: 'Hours',
+                data: data.hours,
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                yAxisID: 'y1',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                                if (context.datasetIndex === 0) {
+                                    label += '{{ settings.currency_symbol }}' + context.parsed.y.toFixed(2);
+                                } else {
+                                    label += context.parsed.y.toFixed(1) + 'h';
+                                }
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '{{ settings.currency_symbol }}' + value.toFixed(0);
+                        }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(1) + 'h';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Initialize worker charts
+{% if worker_stats|length > 1 or (worker_stats|length == 1 and selected_worker == 'all') %}
+function initWorkerCharts() {
+    const workerData = {
+        labels: [],
+        revenue: [],
+        hours: []
+    };
+    
+    {% for worker_name, stats in worker_stats.items() %}
+    workerData.labels.push('{{ worker_name }}');
+    workerData.revenue.push({{ stats.revenue }});
+    workerData.hours.push({{ stats.hours }});
+    {% endfor %}
+    
+    // Worker Revenue Pie Chart
+    const revenueCtx = document.getElementById('workerRevenueChart');
+    if (revenueCtx) {
+        if (workerRevenueChart) {
+            workerRevenueChart.destroy();
+        }
+        workerRevenueChart = new Chart(revenueCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: workerData.labels,
+                datasets: [{
+                    data: workerData.revenue,
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(139, 92, 246, 0.8)',
+                        'rgba(236, 72, 153, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(99, 102, 241)',
+                        'rgb(16, 185, 129)',
+                        'rgb(245, 158, 11)',
+                        'rgb(239, 68, 68)',
+                        'rgb(139, 92, 246)',
+                        'rgb(236, 72, 153)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return label + ': {{ settings.currency_symbol }}' + value.toFixed(2) + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Worker Hours Bar Chart
+    const hoursCtx = document.getElementById('workerHoursChart');
+    if (hoursCtx) {
+        if (workerHoursChart) {
+            workerHoursChart.destroy();
+        }
+        workerHoursChart = new Chart(hoursCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: workerData.labels,
+                datasets: [{
+                    label: 'Hours',
+                    data: workerData.hours,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toFixed(1) + 'h';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+{% endif %}
 
 // Initialize charts on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -292,6 +531,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize charts with current worker filter
     updateCharts('daily');
+    
+    // Initialize worker charts if available
+    {% if worker_stats|length > 1 or (worker_stats|length == 1 and selected_worker == 'all') %}
+    initWorkerCharts();
+    {% endif %}
 });
 
 function changePerPage(value) {
