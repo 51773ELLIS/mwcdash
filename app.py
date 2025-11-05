@@ -602,6 +602,7 @@ def add_entry():
             daily_revenue_goal=0.0,
             monthly_revenue_goal=0.0,
             monthly_take_home_goal=0.0,
+            target_days_per_month=0,
             profit_quota=0.0,
             loss_quota=0.0
         )
