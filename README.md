@@ -275,18 +275,32 @@ sudo journalctl -u revenue_dashboard -n 50
 
 ### Database Issues
 
-If you need to reset the database:
+**⚠️ IMPORTANT:** The application now uses Flask-Migrate for database migrations. When you pull code updates, migrations run automatically to preserve your data.
+
+If you encounter database errors after pulling updates:
 
 ```bash
-# Stop the service
+cd /home/pi/projects/revenue_dashboard
+source venv/bin/activate
+python3 migrate_db.py
+sudo systemctl restart revenue_dashboard
+```
+
+This will update your database schema while preserving all your data.
+
+**Only if absolutely necessary** (⚠️ **WARNING: This deletes all data**):
+
+```bash
 sudo systemctl stop revenue_dashboard
-
-# Remove database
+cd /home/pi/projects/revenue_dashboard
+# Backup first!
+cp database.db database.db.backup
 rm database.db
-
-# Restart service (database will be recreated)
+python3 migrate_db.py
 sudo systemctl start revenue_dashboard
 ```
+
+See `MIGRATIONS.md` for detailed migration documentation.
 
 ### Port Conflicts
 
