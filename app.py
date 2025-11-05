@@ -752,6 +752,7 @@ def settings():
         
         # Handle goals and quotas
         elif 'set_goals' in request.form:
+            print(f"DEBUG: set_goals handler called. Form data: {dict(request.form)}")
             try:
                 # Helper function to safely convert form values to float
                 def safe_float(value, default=0.0):
