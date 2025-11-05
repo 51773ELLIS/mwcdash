@@ -29,6 +29,7 @@ def fix_migration():
             'daily_revenue_goal',
             'monthly_revenue_goal',
             'monthly_take_home_goal',
+            'target_days_per_month',
             'profit_quota',
             'loss_quota'
         ]
@@ -37,9 +38,14 @@ def fix_migration():
             if col_name not in columns:
                 print(f"Adding column {col_name}...")
                 # SQLite limitation: Add as nullable first with default
-                cursor.execute(f"ALTER TABLE settings ADD COLUMN {col_name} FLOAT DEFAULT 0.0")
-                # Update any NULL values (shouldn't be any due to DEFAULT, but just in case)
-                cursor.execute(f"UPDATE settings SET {col_name} = 0.0 WHERE {col_name} IS NULL")
+                if col_name == 'target_days_per_month':
+                    # Integer column for days
+                    cursor.execute(f"ALTER TABLE settings ADD COLUMN {col_name} INTEGER DEFAULT 0")
+                    cursor.execute(f"UPDATE settings SET {col_name} = 0 WHERE {col_name} IS NULL")
+                else:
+                    # Float column for amounts
+                    cursor.execute(f"ALTER TABLE settings ADD COLUMN {col_name} FLOAT DEFAULT 0.0")
+                    cursor.execute(f"UPDATE settings SET {col_name} = 0.0 WHERE {col_name} IS NULL")
                 print(f"✓ Column {col_name} added successfully")
             else:
                 print(f"Column {col_name} already exists, skipping...")

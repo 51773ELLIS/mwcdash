@@ -66,6 +66,24 @@
             <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(monthly_take_home_amount) }}</p>
             <small>Current month</small>
         </div>
+        {% if target_days_per_month > 0 %}
+        <div class="stat-card {% if target_days_status == 'on_target' %}stat-card-highlight{% elif target_days_status == 'behind_target' %}stat-card-warning{% endif %}">
+            <h3>Days Target Status</h3>
+            <p class="stat-value {% if target_days_status == 'on_target' %}stat-value-success{% elif target_days_status == 'behind_target' %}stat-value-warning{% endif %}">
+                {% if target_days_status == 'on_target' %}
+                    ✓ On Target
+                {% elif target_days_status == 'behind_target' %}
+                    ⚠️ Behind Target
+                {% else %}
+                    📊 On Track
+                {% endif %}
+            </p>
+            <small>{{ days_worked_this_month }} / {{ target_days_per_month }} days worked</small>
+            {% if days_needed_for_goal is not none %}
+            <small>{{ days_needed_for_goal }} more days needed for goal</small>
+            {% endif %}
+        </div>
+        {% endif %}
         <div class="stat-card">
             <h3>Avg Hourly Rate</h3>
             <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(avg_hourly_rate) }}</p>

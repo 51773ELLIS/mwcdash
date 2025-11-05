@@ -656,6 +656,19 @@ body::before {
     background: rgba(99, 102, 241, 0.1);
 }
 
+.stat-card-warning {
+    border: 2px solid var(--error-color, #ef4444);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.stat-value-success {
+    color: var(--success-color, #10b981);
+}
+
+.stat-value-warning {
+    color: var(--error-color, #ef4444);
+}
+
 .trend-indicator {
     display: inline-block;
     margin-top: 0.5rem;

@@ -82,6 +82,12 @@
                     <input type="number" id="monthly_take_home_goal" name="monthly_take_home_goal" step="0.01" min="0" value="{{ settings.monthly_take_home_goal|default(0) }}" placeholder="0.00">
                     <small class="form-hint">Target take-home amount for the month</small>
                 </div>
+                
+                <div class="form-group">
+                    <label for="target_days_per_month">Target Days Per Month</label>
+                    <input type="number" id="target_days_per_month" name="target_days_per_month" step="1" min="0" max="31" value="{{ settings.target_days_per_month|default(0) }}" placeholder="0">
+                    <small class="form-hint">Nominal number of work days per month</small>
+                </div>
             </div>
             
             <div class="form-row">

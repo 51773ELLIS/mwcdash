@@ -83,6 +83,7 @@ class Settings(db.Model):
     daily_revenue_goal = db.Column(db.Float, default=0.0, nullable=False)
     monthly_revenue_goal = db.Column(db.Float, default=0.0, nullable=False)
     monthly_take_home_goal = db.Column(db.Float, default=0.0, nullable=False)  # Monthly take-home goal
+    target_days_per_month = db.Column(db.Integer, default=0, nullable=False)  # Target work days per month
     profit_quota = db.Column(db.Float, default=0.0, nullable=False)  # Minimum profit amount
     loss_quota = db.Column(db.Float, default=0.0, nullable=False)  # Maximum acceptable loss
     
