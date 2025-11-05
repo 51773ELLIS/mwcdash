@@ -591,6 +591,8 @@ def add_entry():
             settings.daily_revenue_goal = 0.0
         if not hasattr(settings, 'monthly_revenue_goal') or settings.monthly_revenue_goal is None:
             settings.monthly_revenue_goal = 0.0
+        if not hasattr(settings, 'monthly_take_home_goal') or settings.monthly_take_home_goal is None:
+            settings.monthly_take_home_goal = 0.0
         if not hasattr(settings, 'profit_quota') or settings.profit_quota is None:
             settings.profit_quota = 0.0
         if not hasattr(settings, 'loss_quota') or settings.loss_quota is None:
