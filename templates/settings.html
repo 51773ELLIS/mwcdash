@@ -65,13 +65,13 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="daily_revenue_goal">Daily Revenue Goal ({{ settings.currency_symbol }})</label>
-                    <input type="number" id="daily_revenue_goal" name="daily_revenue_goal" step="0.01" min="0" value="{{ settings.daily_revenue_goal }}" placeholder="0.00">
+                    <input type="number" id="daily_revenue_goal" name="daily_revenue_goal" step="0.01" min="0" value="{{ settings.daily_revenue_goal|default(0) }}" placeholder="0.00">
                     <small class="form-hint">Set to 0 to disable daily goal tracking</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="monthly_revenue_goal">Monthly Revenue Goal ({{ settings.currency_symbol }})</label>
-                    <input type="number" id="monthly_revenue_goal" name="monthly_revenue_goal" step="0.01" min="0" value="{{ settings.monthly_revenue_goal }}" placeholder="0.00">
+                    <input type="number" id="monthly_revenue_goal" name="monthly_revenue_goal" step="0.01" min="0" value="{{ settings.monthly_revenue_goal|default(0) }}" placeholder="0.00">
                     <small class="form-hint">Set to 0 to disable monthly goal tracking</small>
                 </div>
             </div>
@@ -79,13 +79,13 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="profitability_target">Profitability Target (%)</label>
-                    <input type="number" id="profitability_target" name="profitability_target" step="0.1" min="0" max="100" value="{{ settings.profitability_target }}" placeholder="0.0">
+                    <input type="number" id="profitability_target" name="profitability_target" step="0.1" min="0" max="100" value="{{ settings.profitability_target|default(0) }}" placeholder="0.0">
                     <small class="form-hint">Target profit percentage (take-home / revenue * 100)</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="profit_quota">Profit Quota ({{ settings.currency_symbol }})</label>
-                    <input type="number" id="profit_quota" name="profit_quota" step="0.01" min="0" value="{{ settings.profit_quota }}" placeholder="0.00">
+                    <input type="number" id="profit_quota" name="profit_quota" step="0.01" min="0" value="{{ settings.profit_quota|default(0) }}" placeholder="0.00">
                     <small class="form-hint">Minimum profit amount (take-home) to achieve</small>
                 </div>
             </div>
@@ -93,7 +93,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="loss_quota">Maximum Loss Quota ({{ settings.currency_symbol }})</label>
-                    <input type="number" id="loss_quota" name="loss_quota" step="0.01" min="0" value="{{ settings.loss_quota }}" placeholder="0.00">
+                    <input type="number" id="loss_quota" name="loss_quota" step="0.01" min="0" value="{{ settings.loss_quota|default(0) }}" placeholder="0.00">
                     <small class="form-hint">Maximum acceptable loss amount (negative take-home)</small>
                 </div>
             </div>

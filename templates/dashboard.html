@@ -75,12 +75,12 @@
     </div>
 
     <!-- Goals & Targets Section -->
-    {% if settings.daily_revenue_goal > 0 or settings.monthly_revenue_goal > 0 or settings.profitability_target > 0 or settings.profit_quota > 0 or settings.loss_quota > 0 %}
+    {% if (settings.daily_revenue_goal|default(0) > 0) or (settings.monthly_revenue_goal|default(0) > 0) or (settings.profitability_target|default(0) > 0) or (settings.profit_quota|default(0) > 0) or (settings.loss_quota|default(0) > 0) %}
     <div class="goals-section">
         <h2>Goals & Targets</h2>
         
         <div class="goals-grid">
-            {% if settings.daily_revenue_goal > 0 %}
+            {% if settings.daily_revenue_goal|default(0) > 0 %}
             <div class="goal-card">
                 <div class="goal-header">
                     <h3>Daily Revenue Goal</h3>
@@ -101,7 +101,7 @@
             </div>
             {% endif %}
             
-            {% if settings.monthly_revenue_goal > 0 %}
+            {% if settings.monthly_revenue_goal|default(0) > 0 %}
             <div class="goal-card">
                 <div class="goal-header">
                     <h3>Monthly Revenue Goal</h3>
@@ -115,14 +115,14 @@
                     </div>
                     <div class="goal-details">
                         <span class="goal-current">{{ settings.currency_symbol }}{{ "%.2f"|format(monthly_revenue) }}</span>
-                        <span class="goal-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.monthly_revenue_goal) }}</span>
+                        <span class="goal-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.monthly_revenue_goal|default(0)) }}</span>
                         <span class="goal-percent">{{ "%.1f"|format(monthly_goal_progress) }}%</span>
                     </div>
                 </div>
             </div>
             {% endif %}
             
-            {% if settings.profitability_target > 0 %}
+            {% if settings.profitability_target|default(0) > 0 %}
             <div class="goal-card">
                 <div class="goal-header">
                     <h3>Profitability Target</h3>
@@ -134,10 +134,10 @@
                     <div class="profitability-display">
                         <div class="profitability-value">
                             <span class="profitability-rate">{{ "%.1f"|format(profitability_rate) }}%</span>
-                            <span class="profitability-target">/ {{ "%.1f"|format(settings.profitability_target) }}%</span>
+                            <span class="profitability-target">/ {{ "%.1f"|format(settings.profitability_target|default(0)) }}%</span>
                         </div>
                         <div class="profitability-bar">
-                            <div class="progress-fill profitability-fill" style="width: {{ [profitability_rate / settings.profitability_target * 100, 100]|min if settings.profitability_target > 0 else 0 }}%"></div>
+                            <div class="progress-fill profitability-fill" style="width: {{ [profitability_rate / (settings.profitability_target|default(0)) * 100, 100]|min if (settings.profitability_target|default(0)) > 0 else 0 }}%"></div>
                         </div>
                     </div>
                 </div>
@@ -155,7 +155,7 @@
                 <div class="goal-progress">
                     <div class="quota-display">
                         <span class="quota-current">{{ settings.currency_symbol }}{{ "%.2f"|format(take_home_amount) }}</span>
-                        <span class="quota-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.profit_quota) }}</span>
+                        <span class="quota-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.profit_quota|default(0)) }}</span>
                         {% if settings.profit_quota > 0 %}
                         <span class="quota-percent">{{ "%.1f"|format((take_home_amount / settings.profit_quota * 100) if settings.profit_quota > 0 else 0) }}%</span>
                         {% endif %}
@@ -164,7 +164,7 @@
             </div>
             {% endif %}
             
-            {% if settings.loss_quota > 0 and loss_quota_exceeded %}
+            {% if settings.loss_quota|default(0) > 0 and loss_quota_exceeded %}
             <div class="goal-card goal-card-warning">
                 <div class="goal-header">
                     <h3>⚠️ Loss Quota Exceeded</h3>
@@ -173,7 +173,7 @@
                 <div class="goal-progress">
                     <div class="quota-display">
                         <span class="quota-current">{{ settings.currency_symbol }}{{ "%.2f"|format(take_home_amount) }}</span>
-                        <span class="quota-target">/ -{{ settings.currency_symbol }}{{ "%.2f"|format(settings.loss_quota) }}</span>
+                        <span class="quota-target">/ -{{ settings.currency_symbol }}{{ "%.2f"|format(settings.loss_quota|default(0)) }}</span>
                     </div>
                 </div>
             </div>

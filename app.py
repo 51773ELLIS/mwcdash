@@ -132,6 +132,29 @@ def dashboard():
         )
         db.session.add(settings)
         db.session.commit()
+    else:
+        # Ensure goal fields exist (for existing databases before migration)
+        if not hasattr(settings, 'daily_revenue_goal'):
+            settings.daily_revenue_goal = 0.0
+        if not hasattr(settings, 'monthly_revenue_goal'):
+            settings.monthly_revenue_goal = 0.0
+        if not hasattr(settings, 'profitability_target'):
+            settings.profitability_target = 0.0
+        if not hasattr(settings, 'profit_quota'):
+            settings.profit_quota = 0.0
+        if not hasattr(settings, 'loss_quota'):
+            settings.loss_quota = 0.0
+        # Check if values are None and set defaults
+        if settings.daily_revenue_goal is None:
+            settings.daily_revenue_goal = 0.0
+        if settings.monthly_revenue_goal is None:
+            settings.monthly_revenue_goal = 0.0
+        if settings.profitability_target is None:
+            settings.profitability_target = 0.0
+        if settings.profit_quota is None:
+            settings.profit_quota = 0.0
+        if settings.loss_quota is None:
+            settings.loss_quota = 0.0
     
     # Get worker filter
     worker_filter = request.args.get('worker', 'all')
@@ -574,10 +597,27 @@ def settings():
             tax_percent=0.0,
             reinvest_percent=0.0,
             take_home_percent=100.0,
-            currency_symbol='$'
+            currency_symbol='$',
+            daily_revenue_goal=0.0,
+            monthly_revenue_goal=0.0,
+            profitability_target=0.0,
+            profit_quota=0.0,
+            loss_quota=0.0
         )
         db.session.add(settings_obj)
         db.session.commit()
+    else:
+        # Ensure goal fields exist (for existing databases before migration)
+        if not hasattr(settings_obj, 'daily_revenue_goal') or settings_obj.daily_revenue_goal is None:
+            settings_obj.daily_revenue_goal = 0.0
+        if not hasattr(settings_obj, 'monthly_revenue_goal') or settings_obj.monthly_revenue_goal is None:
+            settings_obj.monthly_revenue_goal = 0.0
+        if not hasattr(settings_obj, 'profitability_target') or settings_obj.profitability_target is None:
+            settings_obj.profitability_target = 0.0
+        if not hasattr(settings_obj, 'profit_quota') or settings_obj.profit_quota is None:
+            settings_obj.profit_quota = 0.0
+        if not hasattr(settings_obj, 'loss_quota') or settings_obj.loss_quota is None:
+            settings_obj.loss_quota = 0.0
     
     # Get workers
     workers = Worker.query.filter_by(user_id=current_user.id).order_by(Worker.name).all()
