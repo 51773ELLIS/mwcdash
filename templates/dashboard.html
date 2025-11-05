@@ -215,7 +215,7 @@
         </div>
     </div>
     
-    {% if worker_stats|length > 1 or (worker_stats|length == 1 and selected_worker == 'all') %}
+    {% if worker_stats|length > 0 %}
     <div class="charts-section">
         <div class="chart-container">
             <h3>Revenue by Worker</h3>
@@ -314,7 +314,8 @@
 </div>
 
 <script>
-let revenueChart, hoursChart;
+let revenueChart, hoursChart, revenueHoursChart;
+let workerRevenueChart, workerHoursChart;
 let currentPeriod = 'daily';
 
 function filterByWorker() {
@@ -349,6 +350,11 @@ function updateCharts(period) {
             return response.json();
         })
         .then(data => {
+            // Ensure data has required properties
+            if (!data || !data.labels || !data.revenue || !data.hours) {
+                console.warn('Invalid chart data received:', data);
+                return;
+            }
             updateRevenueChart(data);
             updateHoursChart(data);
             updateRevenueHoursChart(data);
@@ -362,14 +368,20 @@ function updateRevenueChart(data) {
     if (revenueChart) {
         revenueChart.destroy();
     }
-    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const ctxElement = document.getElementById('revenueChart');
+    if (!ctxElement) return;
+    if (!data || !data.labels || !Array.isArray(data.labels) || data.labels.length === 0) {
+        console.warn('No data available for revenue chart');
+        return;
+    }
+    const ctx = ctxElement.getContext('2d');
     revenueChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: data.labels,
             datasets: [{
                 label: 'Revenue ({{ settings.currency_symbol }})',
-                data: data.revenue,
+                data: data.revenue || [],
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 tension: 0.1
@@ -391,14 +403,20 @@ function updateHoursChart(data) {
     if (hoursChart) {
         hoursChart.destroy();
     }
-    const ctx = document.getElementById('hoursChart').getContext('2d');
+    const ctxElement = document.getElementById('hoursChart');
+    if (!ctxElement) return;
+    if (!data || !data.labels || !Array.isArray(data.labels) || data.labels.length === 0) {
+        console.warn('No data available for hours chart');
+        return;
+    }
+    const ctx = ctxElement.getContext('2d');
     hoursChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: data.labels,
             datasets: [{
                 label: 'Hours',
-                data: data.hours,
+                data: data.hours || [],
                 backgroundColor: 'rgba(54, 162, 235, 0.5)',
                 borderColor: 'rgb(54, 162, 235)',
                 borderWidth: 1
@@ -431,23 +449,28 @@ function updateRevenueHoursChart(data) {
     if (revenueHoursChart) {
         revenueHoursChart.destroy();
     }
-    const ctx = document.getElementById('revenueHoursChart');
-    if (!ctx) return;
+    const ctxElement = document.getElementById('revenueHoursChart');
+    if (!ctxElement) return;
+    if (!data || !data.labels || !Array.isArray(data.labels) || data.labels.length === 0) {
+        console.warn('No data available for revenue vs hours chart');
+        return;
+    }
+    const ctx = ctxElement.getContext('2d');
     
-    revenueHoursChart = new Chart(ctx.getContext('2d'), {
+    revenueHoursChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: data.labels,
             datasets: [{
                 label: 'Revenue ({{ settings.currency_symbol }})',
-                data: data.revenue,
+                data: data.revenue || [],
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.1)',
                 yAxisID: 'y',
                 tension: 0.1
             }, {
                 label: 'Hours',
-                data: data.hours,
+                data: data.hours || [],
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.1)',
                 yAxisID: 'y1',
@@ -515,7 +538,7 @@ function updateRevenueHoursChart(data) {
 }
 
 // Initialize worker charts
-{% if worker_stats|length > 1 or (worker_stats|length == 1 and selected_worker == 'all') %}
+{% if worker_stats|length > 0 %}
 function initWorkerCharts() {
     const workerData = {
         labels: [],
@@ -528,6 +551,12 @@ function initWorkerCharts() {
     workerData.revenue.push({{ stats.revenue }});
     workerData.hours.push({{ stats.hours }});
     {% endfor %}
+    
+    // Only render charts if we have data
+    if (workerData.labels.length === 0) {
+        console.log('No worker data available for charts');
+        return;
+    }
     
     // Worker Revenue Pie Chart
     const revenueCtx = document.getElementById('workerRevenueChart');
@@ -641,7 +670,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCharts('daily');
     
     // Initialize worker charts if available
-    {% if worker_stats|length > 1 or (worker_stats|length == 1 and selected_worker == 'all') %}
+    {% if worker_stats|length > 0 %}
     initWorkerCharts();
     {% endif %}
 });

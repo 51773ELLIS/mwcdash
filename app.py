@@ -749,6 +749,35 @@ def settings():
                 return redirect(url_for('settings'))
             else:
                 flash('Invalid currency symbol. Please select $ or £.', 'error')
+        
+        # Handle goals and quotas
+        elif 'set_goals' in request.form:
+            try:
+                # Helper function to safely convert form values to float
+                def safe_float(value, default=0.0):
+                    if not value:
+                        return default
+                    if isinstance(value, str) and value.strip() == '':
+                        return default
+                    try:
+                        return float(value)
+                    except (ValueError, TypeError):
+                        return default
+                
+                settings_obj.daily_revenue_goal = safe_float(request.form.get('daily_revenue_goal', ''))
+                settings_obj.monthly_revenue_goal = safe_float(request.form.get('monthly_revenue_goal', ''))
+                settings_obj.profitability_target = safe_float(request.form.get('profitability_target', ''))
+                settings_obj.profit_quota = safe_float(request.form.get('profit_quota', ''))
+                settings_obj.loss_quota = safe_float(request.form.get('loss_quota', ''))
+                settings_obj.updated_at = datetime.utcnow()
+                db.session.commit()
+                flash('Goals and quotas updated successfully.', 'success')
+                return redirect(url_for('settings'))
+            except ValueError:
+                flash('Invalid input for goals. Please enter valid numbers.', 'error')
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error saving goals: {str(e)}', 'error')
     
     return render_template('settings.html', settings=settings_obj, workers=workers)
 
