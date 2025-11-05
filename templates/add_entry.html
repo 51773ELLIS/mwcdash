@@ -17,7 +17,7 @@
         </div>
         
         <div class="form-group">
-            <label for="revenue">Revenue ({{ settings.currency_symbol if settings else '$' }}) *</label>
+            <label for="revenue">Revenue ({{ settings.currency_symbol|default('$') }}) *</label>
             <input type="number" id="revenue" name="revenue" step="0.01" min="0" value="{{ entry.revenue if entry else '' }}" required>
         </div>
         
