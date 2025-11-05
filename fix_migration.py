@@ -28,7 +28,7 @@ def fix_migration():
         columns_to_add = [
             'daily_revenue_goal',
             'monthly_revenue_goal',
-            'profitability_target',
+            'monthly_take_home_goal',
             'profit_quota',
             'loss_quota'
         ]
