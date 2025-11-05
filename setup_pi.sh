@@ -43,6 +43,18 @@ pip install --upgrade pip --quiet
 echo "Installing Python dependencies..."
 pip install -r requirements.txt
 
+# Initialize database migrations (if not already done)
+echo "Setting up database migrations..."
+if [ ! -d "migrations" ]; then
+    echo "Initializing migrations..."
+    flask db init
+    flask db migrate -m "Initial migration"
+    flask db upgrade
+else
+    echo "Migrations already initialized. Running upgrades..."
+    flask db upgrade
+fi
+
 # Make deploy script executable
 chmod +x deploy.sh
 
