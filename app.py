@@ -504,6 +504,34 @@ def add_entry():
     
     # Get default worker from settings
     settings = Settings.query.filter_by(user_id=current_user.id).first()
+    if not settings:
+        settings = Settings(
+            user_id=current_user.id,
+            tax_percent=0.0,
+            reinvest_percent=0.0,
+            take_home_percent=100.0,
+            currency_symbol='$',
+            daily_revenue_goal=0.0,
+            monthly_revenue_goal=0.0,
+            profitability_target=0.0,
+            profit_quota=0.0,
+            loss_quota=0.0
+        )
+        db.session.add(settings)
+        db.session.commit()
+    else:
+        # Ensure goal fields exist (for existing databases before migration)
+        if not hasattr(settings, 'daily_revenue_goal') or settings.daily_revenue_goal is None:
+            settings.daily_revenue_goal = 0.0
+        if not hasattr(settings, 'monthly_revenue_goal') or settings.monthly_revenue_goal is None:
+            settings.monthly_revenue_goal = 0.0
+        if not hasattr(settings, 'profitability_target') or settings.profitability_target is None:
+            settings.profitability_target = 0.0
+        if not hasattr(settings, 'profit_quota') or settings.profit_quota is None:
+            settings.profit_quota = 0.0
+        if not hasattr(settings, 'loss_quota') or settings.loss_quota is None:
+            settings.loss_quota = 0.0
+    
     default_worker_id = None
     if settings and settings.default_worker_id:
         default_worker = Worker.query.get(settings.default_worker_id)
@@ -567,8 +595,10 @@ def add_entry():
         except Exception as e:
             db.session.rollback()
             flash(f'Error saving entry: {str(e)}', 'error')
+            import traceback
+            print(f"Error saving entry: {traceback.format_exc()}")
     
-    return render_template('add_entry.html', entry=entry, workers=workers, default_worker_id=selected_worker_id)
+    return render_template('add_entry.html', entry=entry, workers=workers, default_worker_id=selected_worker_id, settings=settings)
 
 
 @app.route('/delete_entry/<int:entry_id>')
