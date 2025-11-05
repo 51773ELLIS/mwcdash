@@ -12,7 +12,12 @@
         <div class="nav-container">
             <h1 class="nav-title">Earnings Dashboard</h1>
             {% if current_user.is_authenticated %}
-            <div class="nav-links">
+            <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-links" id="nav-links">
                 <a href="{{ url_for('dashboard') }}">Dashboard</a>
                 <a href="{{ url_for('add_entry') }}">Add Entry</a>
                 <a href="{{ url_for('settings') }}">Settings</a>
@@ -21,6 +26,11 @@
             {% endif %}
         </div>
     </nav>
+    
+    <!-- Mobile Menu Overlay -->
+    {% if current_user.is_authenticated %}
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    {% endif %}
 
     <main class="main-content">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -41,6 +51,47 @@
     </footer>
 
     <script src="{{ url_for('static', filename='charts.js') }}"></script>
+    <script>
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const navLinks = document.getElementById('nav-links');
+        const mobileOverlay = document.getElementById('mobile-menu-overlay');
+        
+        if (menuToggle && navLinks) {
+            function toggleMenu() {
+                const isOpen = navLinks.classList.contains('mobile-open');
+                navLinks.classList.toggle('mobile-open');
+                menuToggle.classList.toggle('active');
+                if (mobileOverlay) {
+                    mobileOverlay.classList.toggle('active');
+                }
+                document.body.style.overflow = isOpen ? '' : 'hidden';
+            }
+            
+            menuToggle.addEventListener('click', toggleMenu);
+            
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', toggleMenu);
+            }
+            
+            // Close menu when clicking on a link
+            const navLinksItems = navLinks.querySelectorAll('a');
+            navLinksItems.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navLinks.classList.contains('mobile-open')) {
+                        toggleMenu();
+                    }
+                });
+            });
+            
+            // Close menu on escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && navLinks.classList.contains('mobile-open')) {
+                    toggleMenu();
+                }
+            });
+        }
+    </script>
 </body>
 </html>
 
