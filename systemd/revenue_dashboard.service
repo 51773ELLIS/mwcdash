@@ -1,0 +1,22 @@
+[Unit]
+Description=Revenue Dashboard Flask Application
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/projects/revenue_dashboard
+Environment="PATH=/home/pi/projects/revenue_dashboard/venv/bin"
+Environment="FLASK_ENV=production"
+ExecStart=/home/pi/projects/revenue_dashboard/venv/bin/python app.py
+Restart=always
+RestartSec=10
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+

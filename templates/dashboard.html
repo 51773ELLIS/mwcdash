@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Earnings Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h2>Dashboard</h2>
+        <div class="period-filters">
+            <button class="btn btn-sm" onclick="updateCharts('daily')">Daily</button>
+            <button class="btn btn-sm" onclick="updateCharts('weekly')">Weekly</button>
+            <button class="btn btn-sm" onclick="updateCharts('monthly')">Monthly</button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <p class="stat-value">${{ "%.2f"|format(total_revenue) }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Hours</h3>
+            <p class="stat-value">{{ "%.1f"|format(total_hours) }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Entries</h3>
+            <p class="stat-value">{{ entry_count }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Avg Daily Revenue</h3>
+            <p class="stat-value">${{ "%.2f"|format(avg_daily_revenue) }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Avg Hours/Day</h3>
+            <p class="stat-value">{{ "%.1f"|format(avg_hours_per_day) }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Take-Home</h3>
+            <p class="stat-value">${{ "%.2f"|format(take_home_amount) }}</p>
+            <small>({{ settings.take_home_percent }}%)</small>
+        </div>
+    </div>
+
+    <div class="breakdown-section">
+        <h3>Revenue Breakdown</h3>
+        <div class="breakdown-grid">
+            <div class="breakdown-item">
+                <span class="breakdown-label">Tax ({{ settings.tax_percent }}%)</span>
+                <span class="breakdown-value">${{ "%.2f"|format(tax_amount) }}</span>
+            </div>
+            <div class="breakdown-item">
+                <span class="breakdown-label">Reinvest ({{ settings.reinvest_percent }}%)</span>
+                <span class="breakdown-value">${{ "%.2f"|format(reinvest_amount) }}</span>
+            </div>
+            <div class="breakdown-item">
+                <span class="breakdown-label">Take-Home ({{ settings.take_home_percent }}%)</span>
+                <span class="breakdown-value">${{ "%.2f"|format(take_home_amount) }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-section">
+        <div class="chart-container">
+            <h3>Revenue Over Time</h3>
+            <canvas id="revenueChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h3>Hours Worked</h3>
+            <canvas id="hoursChart"></canvas>
+        </div>
+    </div>
+
+    <div class="recent-entries">
+        <h3>Recent Entries</h3>
+        {% if entries %}
+        <table class="entries-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Hours</th>
+                    <th>Revenue</th>
+                    <th>Worker</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ "%.1f"|format(entry.hours) }}</td>
+                    <td>${{ "%.2f"|format(entry.revenue) }}</td>
+                    <td>{{ entry.worker_name or '-' }}</td>
+                    <td>
+                        <a href="{{ url_for('add_entry', id=entry.id) }}" class="btn-link">Edit</a>
+                        <a href="{{ url_for('delete_entry', entry_id=entry.id) }}" class="btn-link btn-danger" onclick="return confirm('Delete this entry?')">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="no-entries">No entries yet. <a href="{{ url_for('add_entry') }}">Add your first entry</a></p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+let revenueChart, hoursChart;
+let currentPeriod = 'daily';
+
+function updateCharts(period) {
+    currentPeriod = period;
+    fetch(`/api/chart_data?period=${period}`)
+        .then(response => response.json())
+        .then(data => {
+            updateRevenueChart(data);
+            updateHoursChart(data);
+        })
+        .catch(error => console.error('Error fetching chart data:', error));
+}
+
+function updateRevenueChart(data) {
+    if (revenueChart) {
+        revenueChart.destroy();
+    }
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    revenueChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Revenue ($)',
+                data: data.revenue,
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function updateHoursChart(data) {
+    if (hoursChart) {
+        hoursChart.destroy();
+    }
+    const ctx = document.getElementById('hoursChart').getContext('2d');
+    hoursChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Hours',
+                data: data.hours,
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// Initialize charts on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateCharts('daily');
+});
+</script>
+{% endblock %}
+
