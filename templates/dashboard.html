@@ -94,7 +94,7 @@
                     </div>
                     <div class="goal-details">
                         <span class="goal-current">{{ settings.currency_symbol }}{{ "%.2f"|format(daily_revenue) }}</span>
-                        <span class="goal-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.daily_revenue_goal) }}</span>
+                        <span class="goal-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.daily_revenue_goal|default(0)) }}</span>
                         <span class="goal-percent">{{ "%.1f"|format(daily_goal_progress) }}%</span>
                     </div>
                 </div>
@@ -156,8 +156,8 @@
                     <div class="quota-display">
                         <span class="quota-current">{{ settings.currency_symbol }}{{ "%.2f"|format(take_home_amount) }}</span>
                         <span class="quota-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.profit_quota|default(0)) }}</span>
-                        {% if settings.profit_quota > 0 %}
-                        <span class="quota-percent">{{ "%.1f"|format((take_home_amount / settings.profit_quota * 100) if settings.profit_quota > 0 else 0) }}%</span>
+                        {% if settings.profit_quota|default(0) > 0 %}
+                        <span class="quota-percent">{{ "%.1f"|format((take_home_amount / (settings.profit_quota|default(0)) * 100) if (settings.profit_quota|default(0)) > 0 else 0) }}%</span>
                         {% endif %}
                     </div>
                 </div>
