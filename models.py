@@ -61,7 +61,7 @@ class Worker(db.Model):
     
     # Relationships
     user = db.relationship('User', backref='workers')
-    entries = db.relationship('Entry', backref='worker', lazy=True, cascade='all, delete-orphan')
+    # Note: Entry stores worker_name as string, not a foreign key relationship
     
     def __repr__(self):
         return f'<Worker {self.name}>'
