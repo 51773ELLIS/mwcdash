@@ -299,19 +299,39 @@ def dashboard():
         monthly_revenue_query = monthly_revenue_query.filter(Entry.worker_name == worker_filter)
     monthly_revenue = monthly_revenue_query.scalar() or 0.0
     
-    # Goal progress calculations
-    daily_goal_progress = (daily_revenue / settings.daily_revenue_goal * 100) if settings.daily_revenue_goal > 0 else 0.0
-    monthly_goal_progress = (monthly_revenue / settings.monthly_revenue_goal * 100) if settings.monthly_revenue_goal > 0 else 0.0
+    # Goal progress calculations (with safe attribute access)
+    daily_revenue_goal = getattr(settings, 'daily_revenue_goal', 0.0)
+    if daily_revenue_goal is None:
+        daily_revenue_goal = 0.0
+    
+    monthly_revenue_goal = getattr(settings, 'monthly_revenue_goal', 0.0)
+    if monthly_revenue_goal is None:
+        monthly_revenue_goal = 0.0
+    
+    profitability_target = getattr(settings, 'profitability_target', 0.0)
+    if profitability_target is None:
+        profitability_target = 0.0
+    
+    profit_quota = getattr(settings, 'profit_quota', 0.0)
+    if profit_quota is None:
+        profit_quota = 0.0
+    
+    loss_quota = getattr(settings, 'loss_quota', 0.0)
+    if loss_quota is None:
+        loss_quota = 0.0
+    
+    daily_goal_progress = (daily_revenue / daily_revenue_goal * 100) if daily_revenue_goal > 0 else 0.0
+    monthly_goal_progress = (monthly_revenue / monthly_revenue_goal * 100) if monthly_revenue_goal > 0 else 0.0
     
     # Profitability calculations
     # Profit = Take-home amount
     # Profitability = (Take-home / Total Revenue) * 100
     profitability_rate = (take_home_amount / total_revenue * 100) if total_revenue > 0 else 0.0
-    profitability_target_met = profitability_rate >= settings.profitability_target if settings.profitability_target > 0 else None
+    profitability_target_met = profitability_rate >= profitability_target if profitability_target > 0 else None
     
     # P&L status
-    profit_quota_met = take_home_amount >= settings.profit_quota if settings.profit_quota > 0 else None
-    loss_quota_exceeded = take_home_amount < -settings.loss_quota if settings.loss_quota > 0 else False
+    profit_quota_met = take_home_amount >= profit_quota if profit_quota > 0 else None
+    loss_quota_exceeded = take_home_amount < -loss_quota if loss_quota > 0 else False
     
     # Get workers for filter dropdown
     workers = Worker.query.filter_by(user_id=current_user.id).order_by(Worker.name).all()
