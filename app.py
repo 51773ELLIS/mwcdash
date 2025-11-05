@@ -378,34 +378,29 @@ def dashboard():
     
     if target_days_per_month > 0:
         # Determine status by comparing days needed for goal vs days remaining
-        if monthly_take_home_goal > 0 and avg_daily_take_home_this_month > 0:
-            # Calculate days needed based on monthly take-home goal and average daily take-home
-            if remaining_take_home_needed > 0:
-                # Calculate days needed to achieve goal
-                days_needed_for_status = remaining_take_home_needed / avg_daily_take_home_this_month
-                days_needed_for_status = max(0, math.ceil(days_needed_for_status))
+        if monthly_take_home_goal > 0 and avg_daily_take_home_this_month > 0 and days_needed_for_goal is not None:
+            # Use the calculated days needed for goal
+            # Compare days needed vs days remaining using percentages
+            if days_remaining_in_month > 0:
+                days_needed_percent = (days_needed_for_goal / days_remaining_in_month) * 100
                 
-                # Compare days needed vs days remaining using percentages
-                if days_remaining_in_month > 0:
-                    days_needed_percent = (days_needed_for_status / days_remaining_in_month) * 100
-                    
-                    if days_needed_percent <= 70:  # Ahead: need less than 70% of remaining days
-                        target_days_status = 'ahead'
-                    elif days_needed_percent <= 100:  # On Track: need 70-100% of remaining days
-                        target_days_status = 'on_track'
-                    else:  # Behind: need more than 100% of remaining days
-                        target_days_status = 'behind_target'
-                else:
-                    # No days remaining in month
-                    if remaining_take_home_needed <= 0:
-                        target_days_status = 'on_target'
-                    else:
-                        target_days_status = 'behind_target'
+                if days_needed_percent <= 70:  # Ahead: need less than 70% of remaining days
+                    target_days_status = 'ahead'
+                elif days_needed_percent <= 100:  # On Track: need 70-100% of remaining days
+                    target_days_status = 'on_track'
+                else:  # Behind: need more than 100% of remaining days
+                    target_days_status = 'behind_target'
             else:
-                # Goal already achieved
-                target_days_status = 'on_target'
+                # No days remaining in month
+                if remaining_take_home_needed <= 0:
+                    target_days_status = 'on_target'
+                else:
+                    target_days_status = 'behind_target'
+        elif remaining_take_home_needed <= 0 and monthly_take_home_goal > 0:
+            # Goal already achieved
+            target_days_status = 'on_target'
         else:
-            # No goal set or no average, fall back to simple comparison
+            # No goal set or no average, fall back to simple comparison based on target days
             if days_worked_this_month >= target_days_per_month:
                 target_days_status = 'on_target'
             else:
