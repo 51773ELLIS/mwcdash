@@ -191,14 +191,31 @@ function filterByWorker() {
 
 function updateCharts(period) {
     currentPeriod = period;
-    const worker = document.getElementById('worker-select')?.value || 'all';
-    fetch(`/api/chart_data?period=${period}&worker=${worker}`)
-        .then(response => response.json())
+    // Get worker filter from URL parameter first, then fallback to dropdown
+    const urlParams = new URLSearchParams(window.location.search);
+    const workerFromUrl = urlParams.get('worker');
+    const workerSelect = document.getElementById('worker-select');
+    const worker = workerFromUrl || (workerSelect ? workerSelect.value : 'all');
+    
+    // Ensure dropdown matches current filter
+    if (workerSelect && workerFromUrl) {
+        workerSelect.value = workerFromUrl;
+    }
+    
+    fetch(`/api/chart_data?period=${period}&worker=${encodeURIComponent(worker)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             updateRevenueChart(data);
             updateHoursChart(data);
         })
-        .catch(error => console.error('Error fetching chart data:', error));
+        .catch(error => {
+            console.error('Error fetching chart data:', error);
+        });
 }
 
 function updateRevenueChart(data) {
