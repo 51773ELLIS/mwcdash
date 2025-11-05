@@ -75,7 +75,7 @@
     </div>
 
     <!-- Goals & Targets Section -->
-    {% if (settings.daily_revenue_goal|default(0) > 0) or (settings.monthly_revenue_goal|default(0) > 0) or (settings.profitability_target|default(0) > 0) or (settings.profit_quota|default(0) > 0) or (settings.loss_quota|default(0) > 0) %}
+    {% if (settings.daily_revenue_goal|default(0) > 0) or (settings.monthly_revenue_goal|default(0) > 0) or (settings.monthly_take_home_goal|default(0) > 0) or (settings.profit_quota|default(0) > 0) or (settings.loss_quota|default(0) > 0) %}
     <div class="goals-section">
         <h2>Goals & Targets</h2>
         
@@ -122,23 +122,53 @@
             </div>
             {% endif %}
             
-            {% if settings.profitability_target|default(0) > 0 %}
+            {% if settings.monthly_take_home_goal|default(0) > 0 %}
             <div class="goal-card">
                 <div class="goal-header">
-                    <h3>Profitability Target</h3>
-                    <span class="goal-status {% if profitability_target_met %}goal-met{% else %}goal-pending{% endif %}">
-                        {% if profitability_target_met %}✓ Target Met{% else %}📊 Below Target{% endif %}
+                    <h3>Monthly Take-Home Goal</h3>
+                    <span class="goal-status {% if monthly_take_home_goal_progress >= 100 %}goal-met{% elif monthly_take_home_goal_progress >= 75 %}goal-close{% else %}goal-pending{% endif %}">
+                        {% if monthly_take_home_goal_progress >= 100 %}✓ Met{% elif monthly_take_home_goal_progress >= 75 %}⚡ Close{% else %}📊 In Progress{% endif %}
                     </span>
                 </div>
                 <div class="goal-progress">
-                    <div class="profitability-display">
-                        <div class="profitability-value">
-                            <span class="profitability-rate">{{ "%.1f"|format(profitability_rate) }}%</span>
-                            <span class="profitability-target">/ {{ "%.1f"|format(settings.profitability_target|default(0)) }}%</span>
-                        </div>
-                        <div class="profitability-bar">
-                            <div class="progress-fill profitability-fill" style="width: {{ [profitability_rate / (settings.profitability_target|default(0)) * 100, 100]|min if (settings.profitability_target|default(0)) > 0 else 0 }}%"></div>
-                        </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ [monthly_take_home_goal_progress, 100]|min }}%"></div>
+                    </div>
+                    <div class="goal-details">
+                        <span class="goal-current">{{ settings.currency_symbol }}{{ "%.2f"|format(monthly_take_home_amount) }}</span>
+                        <span class="goal-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.monthly_take_home_goal|default(0)) }}</span>
+                        <span class="goal-percent">{{ "%.1f"|format(monthly_take_home_goal_progress) }}%</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if settings.monthly_take_home_goal|default(0) > 0 %}
+            <div class="goal-card">
+                <div class="goal-header">
+                    <h3>Days Needed for Goal</h3>
+                    <span class="goal-status {% if days_needed_for_goal is not none and days_needed_for_goal <= 7 %}goal-met{% elif days_needed_for_goal is not none and days_needed_for_goal <= 14 %}goal-close{% else %}goal-pending{% endif %}">
+                        {% if days_needed_for_goal is none %}
+                        ⚠️ Not Achievable
+                        {% elif remaining_take_home_needed <= 0 %}
+                        ✓ Goal Achieved
+                        {% elif days_needed_for_goal == 0 %}
+                        ✓ Goal Met
+                        {% else %}
+                        📅 {{ days_needed_for_goal }} Day{{ 's' if days_needed_for_goal > 1 else '' }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="goal-progress">
+                    <div class="goal-details">
+                        {% if days_needed_for_goal is none %}
+                        <span class="goal-current">Goal cannot be achieved with current average</span>
+                        {% elif remaining_take_home_needed <= 0 %}
+                        <span class="goal-current">Monthly goal already achieved! 🎉</span>
+                        {% else %}
+                        <span class="goal-current">{{ settings.currency_symbol }}{{ "%.2f"|format(remaining_take_home_needed) }} remaining</span>
+                        <span class="goal-target">@ {{ settings.currency_symbol }}{{ "%.2f"|format(avg_daily_take_home_this_month) }}/day</span>
+                        {% endif %}
                     </div>
                 </div>
             </div>

@@ -5,8 +5,10 @@ from datetime import datetime, date, timedelta
 from sqlalchemy import func, extract
 from models import db, User, Entry, Settings, Worker
 from config import get_config
+from calendar import monthrange
 import os
 import json
+import math
 
 app = Flask(__name__)
 app.config.from_object(get_config())
@@ -59,7 +61,7 @@ def init_db():
                 currency_symbol='$',
                 daily_revenue_goal=0.0,
                 monthly_revenue_goal=0.0,
-                profitability_target=0.0,
+                monthly_take_home_goal=0.0,
                 profit_quota=0.0,
                 loss_quota=0.0
             )
@@ -126,7 +128,6 @@ def dashboard():
             currency_symbol='$',
             daily_revenue_goal=0.0,
             monthly_revenue_goal=0.0,
-            profitability_target=0.0,
             profit_quota=0.0,
             loss_quota=0.0
         )
@@ -138,8 +139,6 @@ def dashboard():
             settings.daily_revenue_goal = 0.0
         if not hasattr(settings, 'monthly_revenue_goal'):
             settings.monthly_revenue_goal = 0.0
-        if not hasattr(settings, 'profitability_target'):
-            settings.profitability_target = 0.0
         if not hasattr(settings, 'profit_quota'):
             settings.profit_quota = 0.0
         if not hasattr(settings, 'loss_quota'):
@@ -149,8 +148,8 @@ def dashboard():
             settings.daily_revenue_goal = 0.0
         if settings.monthly_revenue_goal is None:
             settings.monthly_revenue_goal = 0.0
-        if settings.profitability_target is None:
-            settings.profitability_target = 0.0
+        if settings.monthly_take_home_goal is None:
+            settings.monthly_take_home_goal = 0.0
         if settings.profit_quota is None:
             settings.profit_quota = 0.0
         if settings.loss_quota is None:
@@ -301,6 +300,9 @@ def dashboard():
         monthly_revenue_query = monthly_revenue_query.filter(Entry.worker_name == worker_filter)
     monthly_revenue = monthly_revenue_query.scalar() or 0.0
     
+    # Calculate monthly take-home amount (current month)
+    monthly_take_home_amount = monthly_revenue * (settings.take_home_percent / 100)
+    
     # Goal progress calculations (with safe attribute access)
     daily_revenue_goal = getattr(settings, 'daily_revenue_goal', 0.0)
     if daily_revenue_goal is None:
@@ -310,10 +312,6 @@ def dashboard():
     if monthly_revenue_goal is None:
         monthly_revenue_goal = 0.0
     
-    profitability_target = getattr(settings, 'profitability_target', 0.0)
-    if profitability_target is None:
-        profitability_target = 0.0
-    
     profit_quota = getattr(settings, 'profit_quota', 0.0)
     if profit_quota is None:
         profit_quota = 0.0
@@ -322,14 +320,55 @@ def dashboard():
     if loss_quota is None:
         loss_quota = 0.0
     
+    monthly_take_home_goal = getattr(settings, 'monthly_take_home_goal', 0.0)
+    if monthly_take_home_goal is None:
+        monthly_take_home_goal = 0.0
+    
     daily_goal_progress = (daily_revenue / daily_revenue_goal * 100) if daily_revenue_goal > 0 else 0.0
     monthly_goal_progress = (monthly_revenue / monthly_revenue_goal * 100) if monthly_revenue_goal > 0 else 0.0
+    monthly_take_home_goal_progress = (monthly_take_home_amount / monthly_take_home_goal * 100) if monthly_take_home_goal > 0 else 0.0
     
-    # Profitability calculations
-    # Profit = Take-home amount
-    # Profitability = (Take-home / Total Revenue) * 100
-    profitability_rate = (take_home_amount / total_revenue * 100) if total_revenue > 0 else 0.0
-    profitability_target_met = profitability_rate >= profitability_target if profitability_target > 0 else None
+    # Calculate days needed to achieve monthly take-home goal
+    days_needed_for_goal = None
+    remaining_take_home_needed = 0.0
+    avg_daily_take_home_this_month = 0.0
+    
+    if monthly_take_home_goal > 0:
+        # Calculate remaining take-home needed
+        remaining_take_home_needed = monthly_take_home_goal - monthly_take_home_amount
+        
+        # Calculate days worked this month
+        days_worked_this_month_query = db.session.query(func.count(func.distinct(Entry.date))).filter(
+            Entry.user_id == current_user.id,
+            Entry.date >= month_start,
+            Entry.date <= today
+        )
+        if worker_filter != 'all':
+            days_worked_this_month_query = days_worked_this_month_query.filter(Entry.worker_name == worker_filter)
+        days_worked_this_month = days_worked_this_month_query.scalar() or 0
+        
+        # Calculate average daily take-home for this month
+        if days_worked_this_month > 0:
+            avg_daily_take_home_this_month = monthly_take_home_amount / days_worked_this_month
+        else:
+            # Fallback to all-time average if no days worked this month
+            avg_daily_take_home_this_month = avg_daily_take_home
+        
+        # Calculate days needed
+        if avg_daily_take_home_this_month > 0:
+            days_needed_for_goal = remaining_take_home_needed / avg_daily_take_home_this_month
+            # Round up to nearest day
+            days_needed_for_goal = max(0, math.ceil(days_needed_for_goal))
+        else:
+            days_needed_for_goal = None
+        
+        # Calculate days remaining in month
+        last_day_of_month = monthrange(today.year, today.month)[1]
+        days_remaining_in_month = last_day_of_month - today.day
+        
+        # If days needed exceeds days remaining, show as not achievable
+        if days_needed_for_goal is not None and days_needed_for_goal > days_remaining_in_month:
+            days_needed_for_goal = None  # Will display as "not achievable"
     
     # P&L status
     profit_quota_met = take_home_amount >= profit_quota if profit_quota > 0 else None
@@ -366,8 +405,11 @@ def dashboard():
                          monthly_revenue=monthly_revenue,
                          daily_goal_progress=daily_goal_progress,
                          monthly_goal_progress=monthly_goal_progress,
-                         profitability_rate=profitability_rate,
-                         profitability_target_met=profitability_target_met,
+                         monthly_take_home_amount=monthly_take_home_amount,
+                         monthly_take_home_goal_progress=monthly_take_home_goal_progress,
+                         days_needed_for_goal=days_needed_for_goal,
+                         remaining_take_home_needed=remaining_take_home_needed,
+                         avg_daily_take_home_this_month=avg_daily_take_home_this_month,
                          profit_quota_met=profit_quota_met,
                          loss_quota_exceeded=loss_quota_exceeded)
 
@@ -536,7 +578,6 @@ def add_entry():
             currency_symbol='$',
             daily_revenue_goal=0.0,
             monthly_revenue_goal=0.0,
-            profitability_target=0.0,
             profit_quota=0.0,
             loss_quota=0.0
         )
@@ -548,8 +589,6 @@ def add_entry():
             settings.daily_revenue_goal = 0.0
         if not hasattr(settings, 'monthly_revenue_goal') or settings.monthly_revenue_goal is None:
             settings.monthly_revenue_goal = 0.0
-        if not hasattr(settings, 'profitability_target') or settings.profitability_target is None:
-            settings.profitability_target = 0.0
         if not hasattr(settings, 'profit_quota') or settings.profit_quota is None:
             settings.profit_quota = 0.0
         if not hasattr(settings, 'loss_quota') or settings.loss_quota is None:
@@ -653,7 +692,7 @@ def settings():
             currency_symbol='$',
             daily_revenue_goal=0.0,
             monthly_revenue_goal=0.0,
-            profitability_target=0.0,
+            monthly_take_home_goal=0.0,
             profit_quota=0.0,
             loss_quota=0.0
         )
@@ -665,8 +704,8 @@ def settings():
             settings_obj.daily_revenue_goal = 0.0
         if not hasattr(settings_obj, 'monthly_revenue_goal') or settings_obj.monthly_revenue_goal is None:
             settings_obj.monthly_revenue_goal = 0.0
-        if not hasattr(settings_obj, 'profitability_target') or settings_obj.profitability_target is None:
-            settings_obj.profitability_target = 0.0
+        if not hasattr(settings_obj, 'monthly_take_home_goal') or settings_obj.monthly_take_home_goal is None:
+            settings_obj.monthly_take_home_goal = 0.0
         if not hasattr(settings_obj, 'profit_quota') or settings_obj.profit_quota is None:
             settings_obj.profit_quota = 0.0
         if not hasattr(settings_obj, 'loss_quota') or settings_obj.loss_quota is None:
@@ -768,14 +807,14 @@ def settings():
                 # Get form values
                 daily_revenue_goal = safe_float(request.form.get('daily_revenue_goal', ''))
                 monthly_revenue_goal = safe_float(request.form.get('monthly_revenue_goal', ''))
-                profitability_target = safe_float(request.form.get('profitability_target', ''))
+                monthly_take_home_goal = safe_float(request.form.get('monthly_take_home_goal', ''))
                 profit_quota = safe_float(request.form.get('profit_quota', ''))
                 loss_quota = safe_float(request.form.get('loss_quota', ''))
                 
                 # Update settings
                 settings_obj.daily_revenue_goal = daily_revenue_goal
                 settings_obj.monthly_revenue_goal = monthly_revenue_goal
-                settings_obj.profitability_target = profitability_target
+                settings_obj.monthly_take_home_goal = monthly_take_home_goal
                 settings_obj.profit_quota = profit_quota
                 settings_obj.loss_quota = loss_quota
                 settings_obj.updated_at = datetime.utcnow()
