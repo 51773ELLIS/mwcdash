@@ -490,6 +490,18 @@ def settings():
                 db.session.commit()
                 flash('Default worker cleared.', 'success')
                 return redirect(url_for('settings'))
+        
+        # Handle currency symbol change
+        elif 'set_currency' in request.form:
+            currency_symbol = request.form.get('currency_symbol', '$').strip()
+            if currency_symbol in ['$', '£']:
+                settings_obj.currency_symbol = currency_symbol
+                settings_obj.updated_at = datetime.utcnow()
+                db.session.commit()
+                flash(f'Currency symbol set to {currency_symbol}.', 'success')
+                return redirect(url_for('settings'))
+            else:
+                flash('Invalid currency symbol. Please select $ or £.', 'error')
     
     return render_template('settings.html', settings=settings_obj, workers=workers)
 
