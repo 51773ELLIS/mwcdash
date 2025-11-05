@@ -3,35 +3,84 @@
 {% block title %}Settings - Earnings Dashboard{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h2>Settings</h2>
-    <p class="settings-description">Configure your revenue distribution percentages. The three percentages must sum to 100%.</p>
-    
-    <form method="POST" action="{{ url_for('settings') }}" class="settings-form" onsubmit="return validatePercentages()">
-        <div class="form-group">
-            <label for="tax_percent">Tax Percentage (%)</label>
-            <input type="number" id="tax_percent" name="tax_percent" step="0.1" min="0" max="100" value="{{ settings.tax_percent }}" required>
-        </div>
+<div class="settings-container">
+    <!-- Percentage Settings Section -->
+    <div class="settings-section">
+        <h2>Revenue Percentages</h2>
+        <p class="settings-description">Configure your revenue distribution percentages. The three percentages must sum to 100%.</p>
         
-        <div class="form-group">
-            <label for="reinvest_percent">Reinvest Percentage (%)</label>
-            <input type="number" id="reinvest_percent" name="reinvest_percent" step="0.1" min="0" max="100" value="{{ settings.reinvest_percent }}" required>
-        </div>
+        <form method="POST" action="{{ url_for('settings') }}" class="settings-form" onsubmit="return validatePercentages()">
+            <div class="form-group">
+                <label for="tax_percent">Tax Percentage (%)</label>
+                <input type="number" id="tax_percent" name="tax_percent" step="0.1" min="0" max="100" value="{{ settings.tax_percent }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="reinvest_percent">Reinvest Percentage (%)</label>
+                <input type="number" id="reinvest_percent" name="reinvest_percent" step="0.1" min="0" max="100" value="{{ settings.reinvest_percent }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="take_home_percent">Take-Home Percentage (%)</label>
+                <input type="number" id="take_home_percent" name="take_home_percent" step="0.1" min="0" max="100" value="{{ settings.take_home_percent }}" required>
+            </div>
+            
+            <div class="percentage-summary">
+                <strong>Total: <span id="total_percent">{{ settings.tax_percent + settings.reinvest_percent + settings.take_home_percent }}</span>%</strong>
+            </div>
+            
+            <input type="hidden" name="tax_percent" id="tax_percent_hidden" value="{{ settings.tax_percent }}">
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Percentages</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Worker Management Section -->
+    <div class="settings-section">
+        <h2>Worker Management</h2>
+        <p class="settings-description">Manage your workers. Set a default worker to pre-select it when adding entries.</p>
         
-        <div class="form-group">
-            <label for="take_home_percent">Take-Home Percentage (%)</label>
-            <input type="number" id="take_home_percent" name="take_home_percent" step="0.1" min="0" max="100" value="{{ settings.take_home_percent }}" required>
+        <!-- Add Worker Form -->
+        <form method="POST" action="{{ url_for('settings') }}" class="add-worker-form">
+            <div class="form-group-inline">
+                <input type="text" id="worker_name" name="worker_name" placeholder="Enter worker name" required class="form-input-inline">
+                <button type="submit" class="btn btn-primary" name="add_worker">Add Worker</button>
+            </div>
+        </form>
+
+        <!-- Worker List -->
+        {% if workers %}
+        <div class="workers-list">
+            <h3>Workers ({{ workers|length }})</h3>
+            <div class="worker-items">
+                {% for worker in workers %}
+                <div class="worker-item">
+                    <div class="worker-info">
+                        <span class="worker-name">{{ worker.name }}</span>
+                        {% if settings.default_worker_id == worker.id %}
+                        <span class="badge badge-default">Default</span>
+                        {% endif %}
+                    </div>
+                    <div class="worker-actions">
+                        {% if settings.default_worker_id != worker.id %}
+                        <form method="POST" action="{{ url_for('settings') }}" style="display: inline;">
+                            <input type="hidden" name="default_worker_id" value="{{ worker.id }}">
+                            <button type="submit" class="btn btn-sm btn-outline" name="set_default_worker">Set Default</button>
+                        </form>
+                        {% endif %}
+                        <a href="{{ url_for('delete_worker', worker_id=worker.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete worker \"{{ worker.name }}\"? This will also delete all entries for this worker.')">Delete</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        
-        <div class="percentage-summary">
-            <strong>Total: <span id="total_percent">{{ settings.tax_percent + settings.reinvest_percent + settings.take_home_percent }}</span>%</strong>
+        {% else %}
+        <div class="no-workers">
+            <p>No workers added yet. Add your first worker above.</p>
         </div>
-        
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Save Settings</button>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
+        {% endif %}
+    </div>
 </div>
 
 <script>
@@ -44,9 +93,9 @@ function updateTotal() {
     
     const totalElement = document.getElementById('total_percent');
     if (Math.abs(total - 100) < 0.01) {
-        totalElement.style.color = 'green';
+        totalElement.style.color = 'var(--success-color, #10b981)';
     } else {
-        totalElement.style.color = 'red';
+        totalElement.style.color = 'var(--error-color, #ef4444)';
     }
 }
 
@@ -72,4 +121,3 @@ document.getElementById('take_home_percent').addEventListener('input', updateTot
 updateTotal();
 </script>
 {% endblock %}
-

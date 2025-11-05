@@ -49,6 +49,24 @@ class Entry(db.Model):
         return f'<Entry {self.date} - ${self.revenue}>'
 
 
+class Worker(db.Model):
+    """Worker model for managing workers"""
+    __tablename__ = 'workers'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    is_default = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='workers')
+    entries = db.relationship('Entry', backref='worker', lazy=True, cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<Worker {self.name}>'
+
+
 class Settings(db.Model):
     """User settings for percentage configuration"""
     __tablename__ = 'settings'
@@ -58,7 +76,11 @@ class Settings(db.Model):
     tax_percent = db.Column(db.Float, default=0.0, nullable=False)
     reinvest_percent = db.Column(db.Float, default=0.0, nullable=False)
     take_home_percent = db.Column(db.Float, default=100.0, nullable=False)
+    default_worker_id = db.Column(db.Integer, db.ForeignKey('workers.id'), nullable=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    default_worker = db.relationship('Worker', foreign_keys=[default_worker_id])
     
     def __repr__(self):
         return f'<Settings User {self.user_id}: Tax {self.tax_percent}%, Reinvest {self.reinvest_percent}%, Take-home {self.take_home_percent}%>'

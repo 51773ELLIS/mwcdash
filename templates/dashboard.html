@@ -6,10 +6,23 @@
 <div class="dashboard">
     <div class="dashboard-header">
         <h2>Dashboard</h2>
-        <div class="period-filters">
-            <button class="btn btn-sm" onclick="updateCharts('daily')">Daily</button>
-            <button class="btn btn-sm" onclick="updateCharts('weekly')">Weekly</button>
-            <button class="btn btn-sm" onclick="updateCharts('monthly')">Monthly</button>
+        <div class="dashboard-controls">
+            <div class="worker-filter">
+                <label for="worker-select">Filter by Worker:</label>
+                <select id="worker-select" class="form-select" onchange="filterByWorker()">
+                    <option value="all" {% if selected_worker == 'all' %}selected{% endif %}>All Workers</option>
+                    {% for worker in workers %}
+                    <option value="{{ worker.name }}" {% if selected_worker == worker.name %}selected{% endif %}>
+                        {{ worker.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="period-filters">
+                <button class="btn btn-sm" onclick="updateCharts('daily')">Daily</button>
+                <button class="btn btn-sm" onclick="updateCharts('weekly')">Weekly</button>
+                <button class="btn btn-sm" onclick="updateCharts('monthly')">Monthly</button>
+            </div>
         </div>
     </div>
 
@@ -108,9 +121,17 @@
 let revenueChart, hoursChart;
 let currentPeriod = 'daily';
 
+function filterByWorker() {
+    const worker = document.getElementById('worker-select').value;
+    const url = new URL(window.location.href);
+    url.searchParams.set('worker', worker);
+    window.location.href = url.toString();
+}
+
 function updateCharts(period) {
     currentPeriod = period;
-    fetch(`/api/chart_data?period=${period}`)
+    const worker = document.getElementById('worker-select')?.value || 'all';
+    fetch(`/api/chart_data?period=${period}&worker=${worker}`)
         .then(response => response.json())
         .then(data => {
             updateRevenueChart(data);
