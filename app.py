@@ -764,20 +764,32 @@ def settings():
                     except (ValueError, TypeError):
                         return default
                 
-                settings_obj.daily_revenue_goal = safe_float(request.form.get('daily_revenue_goal', ''))
-                settings_obj.monthly_revenue_goal = safe_float(request.form.get('monthly_revenue_goal', ''))
-                settings_obj.profitability_target = safe_float(request.form.get('profitability_target', ''))
-                settings_obj.profit_quota = safe_float(request.form.get('profit_quota', ''))
-                settings_obj.loss_quota = safe_float(request.form.get('loss_quota', ''))
+                # Get form values
+                daily_revenue_goal = safe_float(request.form.get('daily_revenue_goal', ''))
+                monthly_revenue_goal = safe_float(request.form.get('monthly_revenue_goal', ''))
+                profitability_target = safe_float(request.form.get('profitability_target', ''))
+                profit_quota = safe_float(request.form.get('profit_quota', ''))
+                loss_quota = safe_float(request.form.get('loss_quota', ''))
+                
+                # Update settings
+                settings_obj.daily_revenue_goal = daily_revenue_goal
+                settings_obj.monthly_revenue_goal = monthly_revenue_goal
+                settings_obj.profitability_target = profitability_target
+                settings_obj.profit_quota = profit_quota
+                settings_obj.loss_quota = loss_quota
                 settings_obj.updated_at = datetime.utcnow()
+                
+                # Commit changes
                 db.session.commit()
                 flash('Goals and quotas updated successfully.', 'success')
                 return redirect(url_for('settings'))
-            except ValueError:
-                flash('Invalid input for goals. Please enter valid numbers.', 'error')
+            except ValueError as e:
+                flash(f'Invalid input for goals. Please enter valid numbers. Error: {str(e)}', 'error')
             except Exception as e:
                 db.session.rollback()
                 flash(f'Error saving goals: {str(e)}', 'error')
+                import traceback
+                print(f"Error saving goals: {traceback.format_exc()}")
     
     return render_template('settings.html', settings=settings_obj, workers=workers)
 
