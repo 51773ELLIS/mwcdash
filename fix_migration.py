@@ -24,20 +24,22 @@ def fix_migration():
         cursor.execute("PRAGMA table_info(settings)")
         columns = [row[1] for row in cursor.fetchall()]
         
-        # Columns to add with default values
+        # Columns to add - SQLite requires adding nullable first, then updating
         columns_to_add = [
-            ('daily_revenue_goal', 'FLOAT DEFAULT 0.0 NOT NULL'),
-            ('monthly_revenue_goal', 'FLOAT DEFAULT 0.0 NOT NULL'),
-            ('profitability_target', 'FLOAT DEFAULT 0.0 NOT NULL'),
-            ('profit_quota', 'FLOAT DEFAULT 0.0 NOT NULL'),
-            ('loss_quota', 'FLOAT DEFAULT 0.0 NOT NULL')
+            'daily_revenue_goal',
+            'monthly_revenue_goal',
+            'profitability_target',
+            'profit_quota',
+            'loss_quota'
         ]
         
-        for col_name, col_def in columns_to_add:
+        for col_name in columns_to_add:
             if col_name not in columns:
                 print(f"Adding column {col_name}...")
-                # SQLite allows adding with DEFAULT directly
-                cursor.execute(f"ALTER TABLE settings ADD COLUMN {col_name} {col_def}")
+                # SQLite limitation: Add as nullable first with default
+                cursor.execute(f"ALTER TABLE settings ADD COLUMN {col_name} FLOAT DEFAULT 0.0")
+                # Update any NULL values (shouldn't be any due to DEFAULT, but just in case)
+                cursor.execute(f"UPDATE settings SET {col_name} = 0.0 WHERE {col_name} IS NULL")
                 print(f"✓ Column {col_name} added successfully")
             else:
                 print(f"Column {col_name} already exists, skipping...")
