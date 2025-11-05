@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_migrate import Migrate
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, extract
 from models import db, User, Entry, Settings, Worker
@@ -12,6 +13,7 @@ app.config.from_object(get_config())
 
 # Initialize extensions
 db.init_app(app)
+migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -25,9 +27,22 @@ def load_user(user_id):
 
 
 def init_db():
-    """Initialize database and create default user if needed"""
+    """Initialize database, run migrations, and create default user if needed"""
     with app.app_context():
-        db.create_all()
+        # Run migrations to ensure database schema is up to date
+        try:
+            from flask_migrate import upgrade
+            upgrade()
+            print("Database migrations completed successfully.")
+        except Exception as e:
+            print(f"Migration note: {e}")
+            # If migrations haven't been initialized yet, create tables
+            # This happens on first run before migrations are set up
+            try:
+                db.create_all()
+                print("Database tables created (first run).")
+            except Exception as create_error:
+                print(f"Error creating tables: {create_error}")
         
         # Create default user if no users exist
         if User.query.count() == 0:

@@ -82,13 +82,21 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Initialize Database
+### 4. Initialize Database and Migrations
 
-The database will be automatically created on first run. To manually initialize:
+The database will be automatically created on first run with migrations. To manually initialize:
 
 ```bash
-python3 -c "from app import app, init_db; init_db()"
+# Initialize migrations (first time only)
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
+
+# Or use the helper script
+python3 migrate_db.py
 ```
+
+**Note:** The application uses Flask-Migrate to handle database schema changes. When you pull code updates, migrations run automatically to preserve your data.
 
 ### 5. Create Default User
 

@@ -49,6 +49,13 @@ pip install -r requirements.txt || {
     exit 1
 }
 
+# Run database migrations
+echo "Running database migrations..."
+python3 migrate_db.py || {
+    echo "Warning: Database migration failed, but continuing..."
+    echo "You may need to run migrations manually: python3 migrate_db.py"
+}
+
 # Restart systemd service
 echo "Restarting systemd service..."
 sudo systemctl restart "$SERVICE_NAME" || {

@@ -32,6 +32,10 @@ instance/
 *.sqlite
 *.sqlite3
 
+# Migrations (keep migrations directory structure but ignore some files)
+migrations/versions/*.pyc
+migrations/versions/__pycache__/
+
 # Environment
 .env
 .venv
