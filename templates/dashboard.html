@@ -32,7 +32,7 @@
             <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(total_revenue) }}</p>
             {% if revenue_change != 0 %}
             <small class="trend-indicator {% if revenue_change > 0 %}trend-up{% else %}trend-down{% endif %}">
-                {% if revenue_change > 0 %}↑{% else %}↓{% endif %} {{ "%.1f"|format(abs(revenue_change_percent)) }}%
+                {% if revenue_change > 0 %}↑{% else %}↓{% endif %} {{ "%.1f"|format(revenue_change_percent_abs) }}%
             </small>
             {% endif %}
         </div>

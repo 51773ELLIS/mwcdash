@@ -272,9 +272,11 @@ def dashboard():
         
         revenue_change = recent_rev - previous_rev
         revenue_change_percent = (revenue_change / previous_rev * 100) if previous_rev > 0 else 0.0
+        revenue_change_percent_abs = abs(revenue_change_percent)
     else:
         revenue_change = 0.0
         revenue_change_percent = 0.0
+        revenue_change_percent_abs = 0.0
     
     # Calculate goal progress
     today = date.today()
@@ -359,6 +361,7 @@ def dashboard():
                          worker_stats=worker_stats,
                          revenue_change=revenue_change,
                          revenue_change_percent=revenue_change_percent,
+                         revenue_change_percent_abs=revenue_change_percent_abs,
                          daily_revenue=daily_revenue,
                          monthly_revenue=monthly_revenue,
                          daily_goal_progress=daily_goal_progress,
