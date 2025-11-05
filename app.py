@@ -253,6 +253,43 @@ def dashboard():
         revenue_change = 0.0
         revenue_change_percent = 0.0
     
+    # Calculate goal progress
+    today = date.today()
+    month_start = date(today.year, today.month, 1)
+    
+    # Daily revenue (today)
+    daily_revenue_query = db.session.query(func.sum(Entry.revenue)).filter(
+        Entry.user_id == current_user.id,
+        Entry.date == today
+    )
+    if worker_filter != 'all':
+        daily_revenue_query = daily_revenue_query.filter(Entry.worker_name == worker_filter)
+    daily_revenue = daily_revenue_query.scalar() or 0.0
+    
+    # Monthly revenue (current month)
+    monthly_revenue_query = db.session.query(func.sum(Entry.revenue)).filter(
+        Entry.user_id == current_user.id,
+        Entry.date >= month_start,
+        Entry.date <= today
+    )
+    if worker_filter != 'all':
+        monthly_revenue_query = monthly_revenue_query.filter(Entry.worker_name == worker_filter)
+    monthly_revenue = monthly_revenue_query.scalar() or 0.0
+    
+    # Goal progress calculations
+    daily_goal_progress = (daily_revenue / settings.daily_revenue_goal * 100) if settings.daily_revenue_goal > 0 else 0.0
+    monthly_goal_progress = (monthly_revenue / settings.monthly_revenue_goal * 100) if settings.monthly_revenue_goal > 0 else 0.0
+    
+    # Profitability calculations
+    # Profit = Take-home amount
+    # Profitability = (Take-home / Total Revenue) * 100
+    profitability_rate = (take_home_amount / total_revenue * 100) if total_revenue > 0 else 0.0
+    profitability_target_met = profitability_rate >= settings.profitability_target if settings.profitability_target > 0 else None
+    
+    # P&L status
+    profit_quota_met = take_home_amount >= settings.profit_quota if settings.profit_quota > 0 else None
+    loss_quota_exceeded = take_home_amount < -settings.loss_quota if settings.loss_quota > 0 else False
+    
     # Get workers for filter dropdown
     workers = Worker.query.filter_by(user_id=current_user.id).order_by(Worker.name).all()
     
