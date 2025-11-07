@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Entries - Earnings Dashboard{% endblock %}
+
+{% block content %}
+<div class="entries-page">
+    <div class="page-header">
+        <h2>Data Entries</h2>
+        <a href="{{ url_for('add_entry') }}" class="btn btn-primary">+ Add New Entry</a>
+    </div>
+
+    <!-- Worker Filter -->
+    {% if worker_stats|length > 0 %}
+    <div class="filter-section">
+        <label for="worker-select">Filter by Worker:</label>
+        <select id="worker-select" onchange="filterByWorker()" class="form-select">
+            <option value="all" {% if selected_worker == 'all' %}selected{% endif %}>All Workers</option>
+            {% for worker_stat in worker_stats %}
+            <option value="{{ worker_stat.name }}" {% if selected_worker == worker_stat.name %}selected{% endif %}>
+                {{ worker_stat.name }} ({{ worker_stat.count }})
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+
+    <!-- Entries Table -->
+    <div class="entries-section">
+        <div class="entries-header">
+            <h3>All Entries</h3>
+            {% if entries.items %}
+            <div class="entries-info">
+                Showing {{ (entries.page - 1) * entries.per_page + 1 }} - {{ entries.page * entries.per_page if entries.page * entries.per_page <= entries.total else entries.total }} of {{ entries.total }}
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if entries.items %}
+        <div class="table-container">
+            <table class="entries-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Hours</th>
+                        <th>Revenue</th>
+                        <th>Worker</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries.items %}
+                    <tr>
+                        <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ "%.1f"|format(entry.hours) }}h</td>
+                        <td>{{ settings.currency_symbol }}{{ "%.2f"|format(entry.revenue) }}</td>
+                        <td>{{ entry.worker_name or '-' }}</td>
+                        <td class="notes-cell">
+                            {% if entry.notes %}
+                            <span class="notes-preview" title="{{ entry.notes }}">{{ entry.notes[:50] }}{% if entry.notes|length > 50 %}...{% endif %}</span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="actions-cell">
+                            <a href="{{ url_for('add_entry', id=entry.id) }}" class="btn-link">Edit</a>
+                            <a href="{{ url_for('delete_entry', entry_id=entry.id) }}" class="btn-link btn-danger" onclick="return confirm('Delete this entry?')">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if entries.pages > 1 %}
+        <div class="pagination">
+            <div class="pagination-controls">
+                {% if entries.has_prev %}
+                <a href="{{ url_for('entries', page=entries.prev_num, worker=selected_worker, per_page=per_page) }}" class="btn btn-sm btn-outline">Previous</a>
+                {% else %}
+                <span class="btn btn-sm btn-outline disabled">Previous</span>
+                {% endif %}
+                
+                <div class="pagination-pages">
+                    {% for page_num in entries.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num == entries.page %}
+                            <span class="pagination-page active">{{ page_num }}</span>
+                            {% else %}
+                            <a href="{{ url_for('entries', page=page_num, worker=selected_worker, per_page=per_page) }}" class="pagination-page">{{ page_num }}</a>
+                            {% endif %}
+                        {% else %}
+                            <span class="pagination-ellipsis">...</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                {% if entries.has_next %}
+                <a href="{{ url_for('entries', page=entries.next_num, worker=selected_worker, per_page=per_page) }}" class="btn btn-sm btn-outline">Next</a>
+                {% else %}
+                <span class="btn btn-sm btn-outline disabled">Next</span>
+                {% endif %}
+            </div>
+            
+            <div class="pagination-per-page">
+                <label for="per-page-select">Per page:</label>
+                <select id="per-page-select" onchange="changePerPage(this.value)" class="form-select form-select-sm">
+                    <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                    <option value="20" {% if per_page == 20 %}selected{% endif %}>20</option>
+                    <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                    <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                </select>
+            </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="no-entries">
+            <p>No entries yet. <a href="{{ url_for('add_entry') }}">Add your first entry</a></p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function filterByWorker() {
+    const worker = document.getElementById('worker-select').value;
+    const url = new URL(window.location.href);
+    url.searchParams.set('worker', worker);
+    url.searchParams.set('page', '1'); // Reset to first page when filtering
+    window.location.href = url.toString();
+}
+
+function changePerPage(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', value);
+    url.searchParams.set('page', '1'); // Reset to first page
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}
+

@@ -638,6 +638,76 @@ def chart_data():
     })
 
 
+@app.route('/entries')
+@login_required
+def entries():
+    """View all entries with pagination"""
+    # Get settings
+    settings = Settings.query.filter_by(user_id=current_user.id).first()
+    if not settings:
+        settings = Settings(
+            user_id=current_user.id,
+            tax_percent=0.0,
+            reinvest_percent=0.0,
+            take_home_percent=100.0,
+            currency_symbol='$',
+            daily_revenue_goal=0.0,
+            monthly_revenue_goal=0.0,
+            monthly_take_home_goal=0.0,
+            target_days_per_month=0,
+            profit_quota=0.0,
+            loss_quota=0.0
+        )
+        db.session.add(settings)
+        db.session.commit()
+    
+    # Get worker filter
+    worker_filter = request.args.get('worker', 'all')
+    
+    # Pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    per_page = min(max(per_page, 5), 100)  # Limit between 5 and 100
+    
+    # Build query
+    query = Entry.query.filter_by(user_id=current_user.id)
+    if worker_filter != 'all':
+        query = query.filter(Entry.worker_name == worker_filter)
+    
+    # Get paginated entries
+    entries = query.order_by(Entry.date.desc()).paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+    
+    # Get all workers for filter dropdown
+    workers = Worker.query.filter_by(user_id=current_user.id).order_by(Worker.name).all()
+    worker_names = [w.name for w in workers]
+    
+    # Get worker stats for filter dropdown
+    worker_stats = []
+    if workers:
+        for worker in workers:
+            worker_entries = Entry.query.filter_by(
+                user_id=current_user.id,
+                worker_name=worker.name
+            ).count()
+            if worker_entries > 0:
+                worker_stats.append({
+                    'name': worker.name,
+                    'count': worker_entries
+                })
+    
+    return render_template('entries.html',
+                         entries=entries,
+                         settings=settings,
+                         workers=workers,
+                         worker_stats=worker_stats,
+                         selected_worker=worker_filter,
+                         per_page=per_page)
+
+
 @app.route('/add_entry', methods=['GET', 'POST'])
 @login_required
 def add_entry():
@@ -650,7 +720,7 @@ def add_entry():
         entry = Entry.query.filter_by(id=entry_id, user_id=current_user.id).first()
         if not entry:
             flash('Entry not found.', 'error')
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('entries'))
         # Find worker ID for existing entry
         if entry.worker_name:
             worker = Worker.query.filter_by(name=entry.worker_name, user_id=current_user.id).first()
@@ -749,7 +819,7 @@ def add_entry():
                 flash('Entry added successfully.', 'success')
             
             db.session.commit()
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('entries'))
             
         except ValueError as e:
             flash(f'Invalid input: {str(e)}', 'error')
@@ -773,6 +843,10 @@ def delete_entry(entry_id):
         flash('Entry deleted successfully.', 'success')
     else:
         flash('Entry not found.', 'error')
+    # Redirect back to the page that called this (entries or dashboard)
+    referrer = request.referrer
+    if referrer and 'entries' in referrer:
+        return redirect(url_for('entries'))
     return redirect(url_for('dashboard'))
 
 
