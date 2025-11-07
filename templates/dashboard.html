@@ -462,9 +462,17 @@ function updateRevenueHoursChart(data) {
         console.warn('No data available for revenue vs hours chart:', data);
         return;
     }
-    if (!data.revenue || !data.hours) {
-        console.warn('Missing revenue or hours data:', data);
+    if (!Array.isArray(data.revenue) || !Array.isArray(data.hours)) {
+        console.warn('Missing revenue or hours data arrays:', data);
         return;
+    }
+    // Ensure arrays have the same length as labels
+    if (data.revenue.length !== data.labels.length || data.hours.length !== data.labels.length) {
+        console.warn('Data arrays length mismatch:', {
+            labels: data.labels.length,
+            revenue: data.revenue.length,
+            hours: data.hours.length
+        });
     }
     const ctx = ctxElement.getContext('2d');
     
