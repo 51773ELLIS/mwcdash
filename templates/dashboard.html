@@ -291,14 +291,26 @@
             <div class="breakdown-item">
                 <span class="breakdown-label">Tax ({{ settings.tax_percent }}%)</span>
                 <span class="breakdown-value">{{ settings.currency_symbol }}{{ tax_amount|currency(2) }}</span>
+                <div class="breakdown-forecast">
+                    <span class="breakdown-forecast-label">12-Month Forecast</span>
+                    <span class="breakdown-forecast-value">{{ settings.currency_symbol }}{{ annual_tax_forecast|currency(2) }}</span>
+                </div>
             </div>
             <div class="breakdown-item">
                 <span class="breakdown-label">Reinvest ({{ settings.reinvest_percent }}%)</span>
                 <span class="breakdown-value">{{ settings.currency_symbol }}{{ reinvest_amount|currency(2) }}</span>
+                <div class="breakdown-forecast">
+                    <span class="breakdown-forecast-label">12-Month Forecast</span>
+                    <span class="breakdown-forecast-value">{{ settings.currency_symbol }}{{ annual_reinvest_forecast|currency(2) }}</span>
+                </div>
             </div>
             <div class="breakdown-item">
                 <span class="breakdown-label">Take-Home ({{ settings.take_home_percent }}%)</span>
                 <span class="breakdown-value">{{ settings.currency_symbol }}{{ take_home_amount|currency(2) }}</span>
+                <div class="breakdown-forecast">
+                    <span class="breakdown-forecast-label">12-Month Forecast</span>
+                    <span class="breakdown-forecast-value">{{ settings.currency_symbol }}{{ annual_take_home_forecast|currency(2) }}</span>
+                </div>
             </div>
         </div>
     </div>

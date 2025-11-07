@@ -279,10 +279,20 @@ def dashboard():
     avg_daily_revenue = total_revenue / entry_count if entry_count > 0 else 0.0
     avg_hours_per_day = total_hours / entry_count if entry_count > 0 else 0.0
     
-    # Calculate amounts based on percentages
+    # Calculate amounts based on percentages (all-time totals)
     tax_amount = total_revenue * (settings.tax_percent / 100)
     reinvest_amount = total_revenue * (settings.reinvest_percent / 100)
     take_home_amount = total_revenue * (settings.take_home_percent / 100)
+    
+    # Calculate monthly amounts for current month (for annual forecast)
+    monthly_tax = monthly_revenue * (settings.tax_percent / 100)
+    monthly_reinvest = monthly_revenue * (settings.reinvest_percent / 100)
+    monthly_take_home_for_forecast = monthly_revenue * (settings.take_home_percent / 100)
+    
+    # Calculate annual forecasts (12 months)
+    annual_tax_forecast = monthly_tax * 12
+    annual_reinvest_forecast = monthly_reinvest * 12
+    annual_take_home_forecast = monthly_take_home_for_forecast * 12
     
     # Calculate additional metrics
     avg_daily_take_home = take_home_amount / entry_count if entry_count > 0 else 0.0
@@ -552,7 +562,10 @@ def dashboard():
                          required_daily_take_home_target=required_daily_take_home_target,
                          remaining_take_home_to_goal=remaining_take_home_to_goal,
                          recent_period=recent_period,
-                         recent_avg_take_home=recent_avg_take_home)
+                         recent_avg_take_home=recent_avg_take_home,
+                         annual_tax_forecast=annual_tax_forecast,
+                         annual_reinvest_forecast=annual_reinvest_forecast,
+                         annual_take_home_forecast=annual_take_home_forecast)
 
 
 @app.route('/api/chart_data')
