@@ -52,8 +52,8 @@
                     {% for entry in entries.items %}
                     <tr>
                         <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
-                        <td>{{ "%.1f"|format(entry.hours) }}h</td>
-                        <td>{{ settings.currency_symbol }}{{ "%.2f"|format(entry.revenue) }}</td>
+                        <td>{{ entry.hours|number(1) }}h</td>
+                        <td>{{ settings.currency_symbol }}{{ entry.revenue|currency(2) }}</td>
                         <td>{{ entry.worker_name or '-' }}</td>
                         <td class="notes-cell">
                             {% if entry.notes %}

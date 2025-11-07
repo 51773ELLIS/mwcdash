@@ -29,7 +29,7 @@
     <div class="stats-grid">
         <div class="stat-card">
             <h3>Total Revenue</h3>
-            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(total_revenue) }}</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ total_revenue|currency(2) }}</p>
             {% if revenue_change != 0 %}
             <small class="trend-indicator {% if revenue_change > 0 %}trend-up{% else %}trend-down{% endif %}">
                 {% if revenue_change > 0 %}↑{% else %}↓{% endif %} {{ "%.1f"|format(revenue_change_percent_abs) }}%
@@ -38,32 +38,32 @@
         </div>
         <div class="stat-card">
             <h3>Total Hours</h3>
-            <p class="stat-value">{{ "%.1f"|format(total_hours) }}</p>
+            <p class="stat-value">{{ total_hours|number(1) }}</p>
         </div>
         <div class="stat-card">
             <h3>Entries</h3>
-            <p class="stat-value">{{ entry_count }}</p>
+            <p class="stat-value">{{ entry_count|number }}</p>
         </div>
         <div class="stat-card">
             <h3>Avg Daily Revenue</h3>
-            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(avg_daily_revenue) }}</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ avg_daily_revenue|currency(2) }}</p>
         </div>
         <div class="stat-card">
             <h3>Avg Hours/Day</h3>
-            <p class="stat-value">{{ "%.1f"|format(avg_hours_per_day) }}</p>
+            <p class="stat-value">{{ avg_hours_per_day|number(1) }}</p>
         </div>
         <div class="stat-card">
             <h3>Take-Home</h3>
-            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(take_home_amount) }}</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ take_home_amount|currency(2) }}</p>
             <small>({{ settings.take_home_percent }}%)</small>
         </div>
         <div class="stat-card">
             <h3>Avg Daily Take-Home</h3>
-            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(avg_daily_take_home) }}</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ avg_daily_take_home|currency(2) }}</p>
         </div>
         <div class="stat-card">
             <h3>Monthly Take-Home</h3>
-            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(monthly_take_home_amount) }}</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ monthly_take_home_amount|currency(2) }}</p>
             <small>Current month</small>
         </div>
         <div class="stat-card {% if settings.monthly_take_home_goal|default(0) > 0 and remaining_take_home_to_goal > 0 %}stat-card-warning{% else %}stat-card-highlight{% endif %}">
@@ -75,12 +75,12 @@
             <p class="stat-value">{{ settings.currency_symbol }}0.00/day</p>
             <small>Monthly take-home goal achieved. 🎉</small>
             {% elif required_daily_take_home_target is not none %}
-            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(required_daily_take_home_target) }}/day</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ required_daily_take_home_target|currency(2) }}/day</p>
             <small>Based on remaining {{ nominal_workdays_remaining }} working day{{ 's' if nominal_workdays_remaining != 1 else '' }} this month.</small>
-            <small>{{ settings.currency_symbol }}{{ "%.2f"|format(remaining_take_home_to_goal) }} needed to reach {{ settings.currency_symbol }}{{ "%.2f"|format(settings.monthly_take_home_goal) }}.</small>
+            <small>{{ settings.currency_symbol }}{{ remaining_take_home_to_goal|currency(2) }} needed to reach {{ settings.currency_symbol }}{{ settings.monthly_take_home_goal|currency(2) }}.</small>
             {% else %}
             <p class="stat-value">No workdays left</p>
-            <small>Shortfall: {{ settings.currency_symbol }}{{ "%.2f"|format(remaining_take_home_to_goal) }}</small>
+            <small>Shortfall: {{ settings.currency_symbol }}{{ remaining_take_home_to_goal|currency(2) }}</small>
             {% endif %}
             <small>
               {% if selected_worker == 'all' %}
@@ -112,13 +112,13 @@
         {% endif %}
         <div class="stat-card">
             <h3>Avg Hourly Rate</h3>
-            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(avg_hourly_rate) }}</p>
+            <p class="stat-value">{{ settings.currency_symbol }}{{ avg_hourly_rate|currency(2) }}</p>
         </div>
         {% if best_day %}
         <div class="stat-card stat-card-highlight">
             <h3>Best Day</h3>
             <p class="stat-value">{{ best_day.strftime('%b %d') }}</p>
-            <small>{{ settings.currency_symbol }}{{ "%.2f"|format(best_day_revenue) }} / {{ "%.1f"|format(best_day_hours) }}h</small>
+            <small>{{ settings.currency_symbol }}{{ best_day_revenue|currency(2) }} / {{ best_day_hours|number(1) }}h</small>
         </div>
         {% endif %}
     </div>
@@ -142,8 +142,8 @@
                         <div class="progress-fill" style="width: {{ [daily_goal_progress, 100]|min }}%"></div>
                     </div>
                     <div class="goal-details">
-                        <span class="goal-current">{{ settings.currency_symbol }}{{ "%.2f"|format(daily_revenue) }}</span>
-                        <span class="goal-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.daily_revenue_goal|default(0)) }}</span>
+                        <span class="goal-current">{{ settings.currency_symbol }}{{ daily_revenue|currency(2) }}</span>
+                        <span class="goal-target">/ {{ settings.currency_symbol }}{{ settings.daily_revenue_goal|default(0)|currency(2) }}</span>
                         <span class="goal-percent">{{ "%.1f"|format(daily_goal_progress) }}%</span>
                     </div>
                 </div>
@@ -163,8 +163,8 @@
                         <div class="progress-fill" style="width: {{ [monthly_goal_progress, 100]|min }}%"></div>
                     </div>
                     <div class="goal-details">
-                        <span class="goal-current">{{ settings.currency_symbol }}{{ "%.2f"|format(monthly_revenue) }}</span>
-                        <span class="goal-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.monthly_revenue_goal|default(0)) }}</span>
+                        <span class="goal-current">{{ settings.currency_symbol }}{{ monthly_revenue|currency(2) }}</span>
+                        <span class="goal-target">/ {{ settings.currency_symbol }}{{ settings.monthly_revenue_goal|default(0)|currency(2) }}</span>
                         <span class="goal-percent">{{ "%.1f"|format(monthly_goal_progress) }}%</span>
                     </div>
                 </div>
@@ -184,8 +184,8 @@
                         <div class="progress-fill" style="width: {{ [monthly_take_home_goal_progress, 100]|min }}%"></div>
                     </div>
                     <div class="goal-details">
-                        <span class="goal-current">{{ settings.currency_symbol }}{{ "%.2f"|format(monthly_take_home_amount) }}</span>
-                        <span class="goal-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.monthly_take_home_goal|default(0)) }}</span>
+                        <span class="goal-current">{{ settings.currency_symbol }}{{ monthly_take_home_amount|currency(2) }}</span>
+                        <span class="goal-target">/ {{ settings.currency_symbol }}{{ settings.monthly_take_home_goal|default(0)|currency(2) }}</span>
                         <span class="goal-percent">{{ "%.1f"|format(monthly_take_home_goal_progress) }}%</span>
                     </div>
                 </div>
@@ -215,8 +215,8 @@
                         {% elif remaining_take_home_needed <= 0 %}
                         <span class="goal-current">Monthly goal already achieved! 🎉</span>
                         {% else %}
-                        <span class="goal-current">{{ settings.currency_symbol }}{{ "%.2f"|format(remaining_take_home_needed) }} remaining</span>
-                        <span class="goal-target">@ {{ settings.currency_symbol }}{{ "%.2f"|format(avg_daily_take_home_this_month) }}/day</span>
+                        <span class="goal-current">{{ settings.currency_symbol }}{{ remaining_take_home_needed|currency(2) }} remaining</span>
+                        <span class="goal-target">@ {{ settings.currency_symbol }}{{ avg_daily_take_home_this_month|currency(2) }}/day</span>
                         {% endif %}
                     </div>
                 </div>
@@ -233,8 +233,8 @@
                 </div>
                 <div class="goal-progress">
                     <div class="quota-display">
-                        <span class="quota-current">{{ settings.currency_symbol }}{{ "%.2f"|format(take_home_amount) }}</span>
-                        <span class="quota-target">/ {{ settings.currency_symbol }}{{ "%.2f"|format(settings.profit_quota|default(0)) }}</span>
+                        <span class="quota-current">{{ settings.currency_symbol }}{{ take_home_amount|currency(2) }}</span>
+                        <span class="quota-target">/ {{ settings.currency_symbol }}{{ settings.profit_quota|default(0)|currency(2) }}</span>
                         {% if settings.profit_quota|default(0) > 0 %}
                         <span class="quota-percent">{{ "%.1f"|format((take_home_amount / (settings.profit_quota|default(0)) * 100) if (settings.profit_quota|default(0)) > 0 else 0) }}%</span>
                         {% endif %}
@@ -251,8 +251,8 @@
                 </div>
                 <div class="goal-progress">
                     <div class="quota-display">
-                        <span class="quota-current">{{ settings.currency_symbol }}{{ "%.2f"|format(take_home_amount) }}</span>
-                        <span class="quota-target">/ -{{ settings.currency_symbol }}{{ "%.2f"|format(settings.loss_quota|default(0)) }}</span>
+                        <span class="quota-current">{{ settings.currency_symbol }}{{ take_home_amount|currency(2) }}</span>
+                        <span class="quota-target">/ -{{ settings.currency_symbol }}{{ settings.loss_quota|default(0)|currency(2) }}</span>
                     </div>
                 </div>
             </div>
@@ -266,15 +266,15 @@
         <div class="breakdown-grid">
             <div class="breakdown-item">
                 <span class="breakdown-label">Tax ({{ settings.tax_percent }}%)</span>
-                <span class="breakdown-value">{{ settings.currency_symbol }}{{ "%.2f"|format(tax_amount) }}</span>
+                <span class="breakdown-value">{{ settings.currency_symbol }}{{ tax_amount|currency(2) }}</span>
             </div>
             <div class="breakdown-item">
                 <span class="breakdown-label">Reinvest ({{ settings.reinvest_percent }}%)</span>
-                <span class="breakdown-value">{{ settings.currency_symbol }}{{ "%.2f"|format(reinvest_amount) }}</span>
+                <span class="breakdown-value">{{ settings.currency_symbol }}{{ reinvest_amount|currency(2) }}</span>
             </div>
             <div class="breakdown-item">
                 <span class="breakdown-label">Take-Home ({{ settings.take_home_percent }}%)</span>
-                <span class="breakdown-value">{{ settings.currency_symbol }}{{ "%.2f"|format(take_home_amount) }}</span>
+                <span class="breakdown-value">{{ settings.currency_symbol }}{{ take_home_amount|currency(2) }}</span>
             </div>
         </div>
     </div>

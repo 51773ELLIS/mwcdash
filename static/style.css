@@ -609,6 +609,12 @@ body::before {
     transition: var(--transition);
     position: relative;
     overflow: hidden;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .stat-card::before {
@@ -634,6 +640,10 @@ body::before {
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .stat-value {
@@ -644,11 +654,21 @@ body::before {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    line-height: 1.2;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    margin: var(--spacing-xs) 0;
+    white-space: normal;
 }
 
 .stat-card small {
     color: var(--text-muted);
     font-size: 0.75rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    display: block;
+    margin-top: var(--spacing-xs);
 }
 
 .stat-card-highlight {

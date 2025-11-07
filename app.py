@@ -9,9 +9,35 @@ from calendar import monthrange
 import os
 import json
 import math
+import locale
 
 app = Flask(__name__)
 app.config.from_object(get_config())
+
+# Custom Jinja2 filters
+@app.template_filter('currency')
+def currency_filter(value, decimals=2):
+    """Format number as currency with thousands separators"""
+    if value is None:
+        return '0.00'
+    try:
+        # Format with thousands separators
+        return f"{value:,.{decimals}f}"
+    except (ValueError, TypeError):
+        return '0.00'
+
+@app.template_filter('number')
+def number_filter(value, decimals=0):
+    """Format number with thousands separators"""
+    if value is None:
+        return '0'
+    try:
+        if decimals > 0:
+            return f"{value:,.{decimals}f}"
+        else:
+            return f"{value:,}"
+    except (ValueError, TypeError):
+        return '0'
 
 # Initialize extensions
 db.init_app(app)
