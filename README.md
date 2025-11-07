@@ -7,6 +7,7 @@ A lightweight Flask web application designed to run on a Raspberry Pi, providing
 - **User Authentication**: Simple local username/password authentication
 - **Daily Work Entry Tracking**: Record date, hours, revenue, worker name, and notes
 - **Revenue Analytics**: View totals, averages, and breakdowns by percentage
+- **Required Daily Target**: See the per-day take-home amount needed to stay on track for your monthly goal, updated with remaining workdays
 - **Interactive Charts**: Chart.js visualizations for daily/weekly/monthly trends
 - **Settings Configuration**: Configure tax, reinvest, and take-home percentages
 - **Auto-Deployment**: GitHub webhook-triggered automatic deployment
@@ -256,6 +257,7 @@ The dashboard displays:
 - **Average Daily Revenue**: Average revenue per entry
 - **Average Hours/Day**: Average hours per entry
 - **Take-Home Amount**: Calculated based on settings
+- **Required Daily Target**: Daily take-home needed to reach the monthly goal using remaining workdays
 
 Charts are available for:
 - **Daily**: Last 30 days
