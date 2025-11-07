@@ -218,20 +218,48 @@ def dashboard():
     # Get worker filter
     worker_filter = request.args.get('worker', 'all')
     
-    # Get number of recent entries for average calculation
-    recent_entries_count = request.args.get('recent_entries', 10, type=int)
-    recent_entries_count = max(1, min(recent_entries_count, 100))  # Limit between 1 and 100
+    # Get recent period selection (save in session for persistence)
+    recent_period = request.args.get('recent_period', session.get('recent_period', '7days'))
+    session['recent_period'] = recent_period  # Save to session
     
-    # Calculate recent average take-home
-    recent_entries_query = Entry.query.filter_by(user_id=current_user.id)
+    # Calculate date range based on selected period
+    today = date.today()
+    if recent_period == '7days':
+        start_date = today - timedelta(days=6)  # Last 7 days including today
+        period_label = 'Last 7 Days'
+    elif recent_period == 'thismonth':
+        start_date = date(today.year, today.month, 1)  # First day of current month
+        period_label = 'This Month'
+    elif recent_period == '3months':
+        # Go back 3 months from today
+        if today.month >= 3:
+            start_date = date(today.year, today.month - 2, 1)
+        else:
+            start_date = date(today.year - 1, 12 + today.month - 2, 1)
+        period_label = 'Last 3 Months'
+    else:
+        # Default to 7 days
+        start_date = today - timedelta(days=6)
+        period_label = 'Last 7 Days'
+    
+    # Calculate recent average take-home based on period
+    recent_entries_query = Entry.query.filter(
+        Entry.user_id == current_user.id,
+        Entry.date >= start_date,
+        Entry.date <= today
+    )
     if worker_filter != 'all':
         recent_entries_query = recent_entries_query.filter(Entry.worker_name == worker_filter)
     
-    recent_entries = recent_entries_query.order_by(Entry.date.desc(), Entry.id.desc()).limit(recent_entries_count).all()
+    recent_entries = recent_entries_query.order_by(Entry.date.desc(), Entry.id.desc()).all()
     
+    # Calculate average take-home per day (not per entry)
     recent_total_revenue = sum(entry.revenue for entry in recent_entries)
     recent_total_take_home = recent_total_revenue * (settings.take_home_percent / 100)
-    recent_avg_take_home = recent_total_take_home / len(recent_entries) if len(recent_entries) > 0 else 0.0
+    
+    # Count unique days worked in the period
+    unique_days = len(set(entry.date for entry in recent_entries))
+    recent_avg_take_home = recent_total_take_home / unique_days if unique_days > 0 else 0.0
     
     # Calculate totals
     total_revenue_query = db.session.query(func.sum(Entry.revenue)).filter_by(user_id=current_user.id)
@@ -523,7 +551,7 @@ def dashboard():
                          nominal_workdays_remaining=nominal_workdays_remaining,
                          required_daily_take_home_target=required_daily_take_home_target,
                          remaining_take_home_to_goal=remaining_take_home_to_goal,
-                         recent_entries_count=recent_entries_count,
+                         recent_period=recent_period,
                          recent_avg_take_home=recent_avg_take_home)
 
 
