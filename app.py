@@ -192,26 +192,6 @@ def dashboard():
     # Get worker filter
     worker_filter = request.args.get('worker', 'all')
     
-    # Pagination parameters
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
-    per_page = min(max(per_page, 5), 50)  # Limit between 5 and 50
-    
-    # Build query
-    query = Entry.query.filter_by(user_id=current_user.id)
-    if worker_filter != 'all':
-        query = query.filter(Entry.worker_name == worker_filter)
-    
-    # Get total count for pagination
-    total_entries = query.count()
-    
-    # Get paginated entries
-    entries = query.order_by(Entry.date.desc()).paginate(
-        page=page,
-        per_page=per_page,
-        error_out=False
-    )
-    
     # Calculate totals
     total_revenue_query = db.session.query(func.sum(Entry.revenue)).filter_by(user_id=current_user.id)
     total_hours_query = db.session.query(func.sum(Entry.hours)).filter_by(user_id=current_user.id)
@@ -462,7 +442,6 @@ def dashboard():
     workers = Worker.query.filter_by(user_id=current_user.id).order_by(Worker.name).all()
     
     return render_template('dashboard.html',
-                         entries=entries,
                          total_revenue=total_revenue,
                          total_hours=total_hours,
                          entry_count=entry_count,
@@ -476,8 +455,6 @@ def dashboard():
                          take_home_amount=take_home_amount,
                          workers=workers,
                          selected_worker=worker_filter,
-                         page=page,
-                         per_page=per_page,
                          best_day=best_day,
                          best_day_revenue=best_day_revenue,
                          best_day_hours=best_day_hours,
