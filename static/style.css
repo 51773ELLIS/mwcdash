@@ -963,7 +963,7 @@ body::before {
     gap: var(--spacing-sm);
 }
 
-.breakdown-item > span:first-of-type {
+.breakdown-main {
     display: flex;
     justify-content: space-between;
     align-items: center;
