@@ -218,6 +218,21 @@ def dashboard():
     # Get worker filter
     worker_filter = request.args.get('worker', 'all')
     
+    # Get number of recent entries for average calculation
+    recent_entries_count = request.args.get('recent_entries', 10, type=int)
+    recent_entries_count = max(1, min(recent_entries_count, 100))  # Limit between 1 and 100
+    
+    # Calculate recent average take-home
+    recent_entries_query = Entry.query.filter_by(user_id=current_user.id)
+    if worker_filter != 'all':
+        recent_entries_query = recent_entries_query.filter(Entry.worker_name == worker_filter)
+    
+    recent_entries = recent_entries_query.order_by(Entry.date.desc(), Entry.id.desc()).limit(recent_entries_count).all()
+    
+    recent_total_revenue = sum(entry.revenue for entry in recent_entries)
+    recent_total_take_home = recent_total_revenue * (settings.take_home_percent / 100)
+    recent_avg_take_home = recent_total_take_home / len(recent_entries) if len(recent_entries) > 0 else 0.0
+    
     # Calculate totals
     total_revenue_query = db.session.query(func.sum(Entry.revenue)).filter_by(user_id=current_user.id)
     total_hours_query = db.session.query(func.sum(Entry.hours)).filter_by(user_id=current_user.id)
@@ -507,7 +522,9 @@ def dashboard():
                          nominal_workdays_passed=nominal_workdays_passed,
                          nominal_workdays_remaining=nominal_workdays_remaining,
                          required_daily_take_home_target=required_daily_take_home_target,
-                         remaining_take_home_to_goal=remaining_take_home_to_goal)
+                         remaining_take_home_to_goal=remaining_take_home_to_goal,
+                         recent_entries_count=recent_entries_count,
+                         recent_avg_take_home=recent_avg_take_home)
 
 
 @app.route('/api/chart_data')

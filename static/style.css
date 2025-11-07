@@ -589,6 +589,30 @@ body::before {
     flex-wrap: wrap;
 }
 
+.recent-entries-filter {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
+
+.recent-entries-filter label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.recent-entries-filter input[type="number"] {
+    width: 80px;
+    padding: 0.5rem 0.75rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
 /* Stats Grid - Modern Cards */
 .stats-grid {
     display: grid;
