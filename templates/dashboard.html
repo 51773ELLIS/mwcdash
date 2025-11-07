@@ -395,6 +395,7 @@
 <script>
 let revenueChart, hoursChart, revenueHoursChart;
 let workerRevenueChart, workerHoursChart;
+const currencySymbol = '{{ settings.currency_symbol }}';
 let currentPeriod = 'daily';
 
 function filterByWorker() {
@@ -430,13 +431,21 @@ function updateCharts(period) {
         })
         .then(data => {
             // Ensure data has required properties
-            if (!data || !data.labels || !data.revenue || !data.hours) {
+            if (!data || !data.labels || !Array.isArray(data.labels)) {
                 console.warn('Invalid chart data received:', data);
                 return;
             }
-            updateRevenueChart(data);
-            updateHoursChart(data);
-            updateRevenueHoursChart(data);
+            // Update charts with data validation
+            if (data.revenue && Array.isArray(data.revenue)) {
+                updateRevenueChart(data);
+            }
+            if (data.hours && Array.isArray(data.hours)) {
+                updateHoursChart(data);
+            }
+            // Revenue vs Hours chart needs both revenue and hours
+            if (data.revenue && Array.isArray(data.revenue) && data.hours && Array.isArray(data.hours)) {
+                updateRevenueHoursChart(data);
+            }
         })
         .catch(error => {
             console.error('Error fetching chart data:', error);
@@ -529,9 +538,16 @@ function updateRevenueHoursChart(data) {
         revenueHoursChart.destroy();
     }
     const ctxElement = document.getElementById('revenueHoursChart');
-    if (!ctxElement) return;
+    if (!ctxElement) {
+        console.warn('Revenue vs Hours chart canvas element not found');
+        return;
+    }
     if (!data || !data.labels || !Array.isArray(data.labels) || data.labels.length === 0) {
-        console.warn('No data available for revenue vs hours chart');
+        console.warn('No data available for revenue vs hours chart:', data);
+        return;
+    }
+    if (!data.revenue || !data.hours) {
+        console.warn('Missing revenue or hours data:', data);
         return;
     }
     const ctx = ctxElement.getContext('2d');
@@ -541,19 +557,21 @@ function updateRevenueHoursChart(data) {
         data: {
             labels: data.labels,
             datasets: [{
-                label: 'Revenue ({{ settings.currency_symbol }})',
+                label: 'Revenue (' + currencySymbol + ')',
                 data: data.revenue || [],
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.1)',
                 yAxisID: 'y',
-                tension: 0.1
+                tension: 0.1,
+                fill: false
             }, {
                 label: 'Hours',
                 data: data.hours || [],
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.1)',
                 yAxisID: 'y1',
-                tension: 0.1
+                tension: 0.1,
+                fill: false
             }]
         },
         options: {
@@ -575,7 +593,7 @@ function updateRevenueHoursChart(data) {
                             if (label) {
                                 label += ': ';
                                 if (context.datasetIndex === 0) {
-                                    label += '{{ settings.currency_symbol }}' + context.parsed.y.toFixed(2);
+                                    label += currencySymbol + context.parsed.y.toFixed(2);
                                 } else {
                                     label += context.parsed.y.toFixed(1) + 'h';
                                 }
@@ -591,9 +609,13 @@ function updateRevenueHoursChart(data) {
                     display: true,
                     position: 'left',
                     beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Revenue (' + currencySymbol + ')'
+                    },
                     ticks: {
                         callback: function(value) {
-                            return '{{ settings.currency_symbol }}' + value.toFixed(0);
+                            return currencySymbol + value.toFixed(0);
                         }
                     }
                 },
@@ -602,6 +624,10 @@ function updateRevenueHoursChart(data) {
                     display: true,
                     position: 'right',
                     beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Hours'
+                    },
                     grid: {
                         drawOnChartArea: false,
                     },
