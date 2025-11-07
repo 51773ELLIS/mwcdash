@@ -284,16 +284,6 @@ def dashboard():
     reinvest_amount = total_revenue * (settings.reinvest_percent / 100)
     take_home_amount = total_revenue * (settings.take_home_percent / 100)
     
-    # Calculate monthly amounts for current month (for annual forecast)
-    monthly_tax = monthly_revenue * (settings.tax_percent / 100)
-    monthly_reinvest = monthly_revenue * (settings.reinvest_percent / 100)
-    monthly_take_home_for_forecast = monthly_revenue * (settings.take_home_percent / 100)
-    
-    # Calculate annual forecasts (12 months)
-    annual_tax_forecast = monthly_tax * 12
-    annual_reinvest_forecast = monthly_reinvest * 12
-    annual_take_home_forecast = monthly_take_home_for_forecast * 12
-    
     # Calculate additional metrics
     avg_daily_take_home = take_home_amount / entry_count if entry_count > 0 else 0.0
     avg_hourly_rate = total_revenue / total_hours if total_hours > 0 else 0.0
@@ -395,6 +385,16 @@ def dashboard():
     
     # Calculate monthly take-home amount (current month)
     monthly_take_home_amount = monthly_revenue * (settings.take_home_percent / 100)
+    
+    # Calculate monthly amounts for current month (for annual forecast)
+    monthly_tax = monthly_revenue * (settings.tax_percent / 100)
+    monthly_reinvest = monthly_revenue * (settings.reinvest_percent / 100)
+    monthly_take_home_for_forecast = monthly_revenue * (settings.take_home_percent / 100)
+    
+    # Calculate annual forecasts (12 months)
+    annual_tax_forecast = monthly_tax * 12
+    annual_reinvest_forecast = monthly_reinvest * 12
+    annual_take_home_forecast = monthly_take_home_for_forecast * 12
     
     # Goal progress calculations (with safe attribute access)
     daily_revenue_goal = getattr(settings, 'daily_revenue_goal', 0.0)
