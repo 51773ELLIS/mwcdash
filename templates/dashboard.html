@@ -693,6 +693,14 @@ function initWorkerCharts() {
 }
 {% endif %}
 
+function updateRecentEntriesAvg() {
+    const count = document.getElementById('recent-entries-count').value;
+    const url = new URL(window.location.href);
+    url.searchParams.set('recent_entries', count);
+    url.searchParams.set('page', '1'); // Reset to first page
+    window.location.href = url.toString();
+}
+
 // Initialize charts on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Get worker filter from URL or dropdown
