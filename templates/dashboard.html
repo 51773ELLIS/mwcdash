@@ -66,6 +66,30 @@
             <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(monthly_take_home_amount) }}</p>
             <small>Current month</small>
         </div>
+        <div class="stat-card {% if settings.monthly_take_home_goal|default(0) > 0 and remaining_take_home_to_goal > 0 %}stat-card-warning{% else %}stat-card-highlight{% endif %}">
+            <h3>Required Daily Target</h3>
+            {% if settings.monthly_take_home_goal|default(0) <= 0 %}
+            <p class="stat-value">Set a goal</p>
+            <small>Configure a monthly take-home goal in Settings.</small>
+            {% elif remaining_take_home_to_goal <= 0 %}
+            <p class="stat-value">{{ settings.currency_symbol }}0.00/day</p>
+            <small>Monthly take-home goal achieved. 🎉</small>
+            {% elif required_daily_take_home_target is not none %}
+            <p class="stat-value">{{ settings.currency_symbol }}{{ "%.2f"|format(required_daily_take_home_target) }}/day</p>
+            <small>Based on remaining {{ nominal_workdays_remaining }} working day{{ 's' if nominal_workdays_remaining != 1 else '' }} this month.</small>
+            <small>{{ settings.currency_symbol }}{{ "%.2f"|format(remaining_take_home_to_goal) }} needed to reach {{ settings.currency_symbol }}{{ "%.2f"|format(settings.monthly_take_home_goal) }}.</small>
+            {% else %}
+            <p class="stat-value">No workdays left</p>
+            <small>Shortfall: {{ settings.currency_symbol }}{{ "%.2f"|format(remaining_take_home_to_goal) }}</small>
+            {% endif %}
+            <small>
+              {% if selected_worker == 'all' %}
+              All workers
+              {% else %}
+              {{ selected_worker }}
+              {% endif %}
+            </small>
+        </div>
         {% if target_days_per_month > 0 %}
         <div class="stat-card {% if target_days_status == 'on_target' or target_days_status == 'ahead' %}stat-card-highlight{% elif target_days_status == 'behind_target' %}stat-card-warning{% endif %}">
             <h3>Days Target Status</h3>

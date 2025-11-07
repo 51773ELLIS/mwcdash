@@ -28,6 +28,36 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+def _count_weekdays(start_date, end_date):
+    """Count weekdays (Mon-Fri) between two dates inclusive."""
+    if start_date > end_date:
+        return 0
+    delta = end_date - start_date
+    weekday_count = 0
+    for days in range(delta.days + 1):
+        current_day = start_date + timedelta(days=days)
+        if current_day.weekday() < 5:  # Monday=0 ... Sunday=6
+            weekday_count += 1
+    return weekday_count
+
+
+def get_month_workday_stats(reference_date=None):
+    """Return total, passed, and remaining nominal workdays for the month of reference_date."""
+    if reference_date is None:
+        reference_date = date.today()
+    month_start = date(reference_date.year, reference_date.month, 1)
+    last_day = monthrange(reference_date.year, reference_date.month)[1]
+    month_end = date(reference_date.year, reference_date.month, last_day)
+    total_workdays = _count_weekdays(month_start, month_end)
+    remaining_workdays = _count_weekdays(reference_date, month_end)
+    workdays_passed = max(total_workdays - remaining_workdays, 0)
+    return {
+        'total': total_workdays,
+        'passed': workdays_passed,
+        'remaining': remaining_workdays
+    }
+
+
 def init_db():
     """Initialize database, run migrations, and create default user if needed"""
     with app.app_context():
@@ -345,6 +375,12 @@ def dashboard():
     # Calculate days remaining in month
     last_day_of_month = monthrange(today.year, today.month)[1]
     days_remaining_in_month = last_day_of_month - today.day
+
+    # Nominal workday statistics for the current month
+    workday_stats = get_month_workday_stats(today)
+    nominal_workdays_total = workday_stats['total']
+    nominal_workdays_passed = workday_stats['passed']
+    nominal_workdays_remaining = workday_stats['remaining']
     
     # Calculate days needed to achieve monthly take-home goal
     days_needed_for_goal = None
@@ -415,6 +451,12 @@ def dashboard():
     # P&L status
     profit_quota_met = take_home_amount >= profit_quota if profit_quota > 0 else None
     loss_quota_exceeded = take_home_amount < -loss_quota if loss_quota > 0 else False
+
+    # Required daily take-home target based on remaining workdays
+    remaining_take_home_to_goal = max(remaining_take_home_needed, 0.0)
+    required_daily_take_home_target = None
+    if monthly_take_home_goal > 0 and nominal_workdays_remaining > 0:
+        required_daily_take_home_target = remaining_take_home_to_goal / nominal_workdays_remaining
     
     # Get workers for filter dropdown
     workers = Worker.query.filter_by(user_id=current_user.id).order_by(Worker.name).all()
@@ -457,7 +499,12 @@ def dashboard():
                          target_days_per_month=target_days_per_month,
                          target_days_status=target_days_status,
                          profit_quota_met=profit_quota_met,
-                         loss_quota_exceeded=loss_quota_exceeded)
+                         loss_quota_exceeded=loss_quota_exceeded,
+                         nominal_workdays_total=nominal_workdays_total,
+                         nominal_workdays_passed=nominal_workdays_passed,
+                         nominal_workdays_remaining=nominal_workdays_remaining,
+                         required_daily_take_home_target=required_daily_take_home_target,
+                         remaining_take_home_to_goal=remaining_take_home_to_goal)
 
 
 @app.route('/api/chart_data')
