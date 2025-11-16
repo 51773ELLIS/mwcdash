@@ -3,6 +3,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from flask_migrate import Migrate
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, extract
+from sqlalchemy.exc import OperationalError
 from models import db, User, Entry, Settings, Worker
 from config import get_config
 from calendar import monthrange
@@ -192,7 +193,26 @@ def logout():
 def dashboard():
     """Main dashboard with analytics"""
     # Get user settings
-    settings = Settings.query.filter_by(user_id=current_user.id).first()
+    try:
+        settings = Settings.query.filter_by(user_id=current_user.id).first()
+    except OperationalError as e:
+        # Handle missing column error (workdays_of_week not yet migrated)
+        if 'workdays_of_week' in str(e):
+            # Try to run migration automatically
+            try:
+                from migrations.add_workdays_of_week import add_workdays_of_week
+                if add_workdays_of_week():
+                    # Retry query after migration
+                    settings = Settings.query.filter_by(user_id=current_user.id).first()
+                else:
+                    # Migration failed, use raw query without the column
+                    settings = None
+            except Exception:
+                # Migration script not available or failed, use raw query
+                settings = None
+        else:
+            raise
+    
     if not settings:
         settings = Settings(
             user_id=current_user.id,
@@ -461,10 +481,15 @@ def dashboard():
 
     # Parse workdays_of_week from settings
     workdays_of_week = None
-    if settings and hasattr(settings, 'workdays_of_week') and settings.workdays_of_week:
+    if settings:
         try:
-            workdays_of_week = [int(d.strip()) for d in settings.workdays_of_week.split(',') if d.strip()]
-        except (ValueError, AttributeError):
+            if hasattr(settings, 'workdays_of_week') and settings.workdays_of_week:
+                try:
+                    workdays_of_week = [int(d.strip()) for d in settings.workdays_of_week.split(',') if d.strip()]
+                except (ValueError, AttributeError):
+                    workdays_of_week = None
+        except (AttributeError, OperationalError):
+            # Column doesn't exist yet, use default (None = Mon-Fri)
             workdays_of_week = None
     
     # Nominal workday statistics for the current month
