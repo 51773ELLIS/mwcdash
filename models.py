@@ -86,6 +86,7 @@ class Settings(db.Model):
     target_days_per_month = db.Column(db.Integer, default=0, nullable=False)  # Target work days per month
     profit_quota = db.Column(db.Float, default=0.0, nullable=False)  # Minimum profit amount
     loss_quota = db.Column(db.Float, default=0.0, nullable=False)  # Maximum acceptable loss
+    workdays_of_week = db.Column(db.String(20), default='0,1,2,3,4', nullable=False)  # Days of week worked (0=Mon, 6=Sun), comma-separated
     
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

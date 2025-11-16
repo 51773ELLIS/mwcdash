@@ -54,28 +54,44 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-def _count_weekdays(start_date, end_date):
-    """Count weekdays (Mon-Fri) between two dates inclusive."""
+def _count_workdays(start_date, end_date, workdays_of_week=None):
+    """Count workdays between two dates inclusive based on specified days of week.
+    
+    Args:
+        start_date: Start date
+        end_date: End date
+        workdays_of_week: List of weekday numbers (0=Monday, 6=Sunday) or None for default Mon-Fri
+    """
     if start_date > end_date:
         return 0
+    
+    # Default to Monday-Friday if not specified
+    if workdays_of_week is None:
+        workdays_of_week = [0, 1, 2, 3, 4]  # Mon-Fri
+    
     delta = end_date - start_date
-    weekday_count = 0
+    workday_count = 0
     for days in range(delta.days + 1):
         current_day = start_date + timedelta(days=days)
-        if current_day.weekday() < 5:  # Monday=0 ... Sunday=6
-            weekday_count += 1
-    return weekday_count
+        if current_day.weekday() in workdays_of_week:
+            workday_count += 1
+    return workday_count
 
 
-def get_month_workday_stats(reference_date=None):
-    """Return total, passed, and remaining nominal workdays for the month of reference_date."""
+def get_month_workday_stats(reference_date=None, workdays_of_week=None):
+    """Return total, passed, and remaining nominal workdays for the month of reference_date.
+    
+    Args:
+        reference_date: Date to calculate from (defaults to today)
+        workdays_of_week: List of weekday numbers (0=Monday, 6=Sunday) or None for default Mon-Fri
+    """
     if reference_date is None:
         reference_date = date.today()
     month_start = date(reference_date.year, reference_date.month, 1)
     last_day = monthrange(reference_date.year, reference_date.month)[1]
     month_end = date(reference_date.year, reference_date.month, last_day)
-    total_workdays = _count_weekdays(month_start, month_end)
-    remaining_workdays = _count_weekdays(reference_date, month_end)
+    total_workdays = _count_workdays(month_start, month_end, workdays_of_week)
+    remaining_workdays = _count_workdays(reference_date, month_end, workdays_of_week)
     workdays_passed = max(total_workdays - remaining_workdays, 0)
     return {
         'total': total_workdays,
@@ -120,7 +136,8 @@ def init_db():
                 monthly_take_home_goal=0.0,
                 target_days_per_month=0,
                 profit_quota=0.0,
-                loss_quota=0.0
+                loss_quota=0.0,
+                workdays_of_week='0,1,2,3,4'
             )
             db.session.add(default_settings)
             db.session.commit()
@@ -187,7 +204,8 @@ def dashboard():
             monthly_revenue_goal=0.0,
             monthly_take_home_goal=0.0,
             profit_quota=0.0,
-            loss_quota=0.0
+            loss_quota=0.0,
+            workdays_of_week='0,1,2,3,4'
         )
         db.session.add(settings)
         db.session.commit()
@@ -214,6 +232,8 @@ def dashboard():
             settings.profit_quota = 0.0
         if settings.loss_quota is None:
             settings.loss_quota = 0.0
+        if not hasattr(settings, 'workdays_of_week') or not settings.workdays_of_week:
+            settings.workdays_of_week = '0,1,2,3,4'
     
     # Get worker filter
     worker_filter = request.args.get('worker', 'all')
@@ -255,11 +275,15 @@ def dashboard():
     
     # Calculate average take-home per day (not per entry)
     recent_total_revenue = sum(entry.revenue for entry in recent_entries)
+    recent_total_hours = sum(entry.hours for entry in recent_entries)
     recent_total_take_home = recent_total_revenue * (settings.take_home_percent / 100)
     
     # Count unique days worked in the period
     unique_days = len(set(entry.date for entry in recent_entries))
     recent_avg_take_home = recent_total_take_home / unique_days if unique_days > 0 else 0.0
+    
+    # Calculate average hourly rate based on recent period
+    avg_hourly_rate = recent_total_revenue / recent_total_hours if recent_total_hours > 0 else 0.0
     
     # Calculate totals
     total_revenue_query = db.session.query(func.sum(Entry.revenue)).filter_by(user_id=current_user.id)
@@ -286,7 +310,7 @@ def dashboard():
     
     # Calculate additional metrics
     avg_daily_take_home = take_home_amount / entry_count if entry_count > 0 else 0.0
-    avg_hourly_rate = total_revenue / total_hours if total_hours > 0 else 0.0
+    # Note: avg_hourly_rate is now calculated above based on recent period
     
     # Advanced analytics
     best_day = None
@@ -435,8 +459,16 @@ def dashboard():
     last_day_of_month = monthrange(today.year, today.month)[1]
     days_remaining_in_month = last_day_of_month - today.day
 
+    # Parse workdays_of_week from settings
+    workdays_of_week = None
+    if settings and hasattr(settings, 'workdays_of_week') and settings.workdays_of_week:
+        try:
+            workdays_of_week = [int(d.strip()) for d in settings.workdays_of_week.split(',') if d.strip()]
+        except (ValueError, AttributeError):
+            workdays_of_week = None
+    
     # Nominal workday statistics for the current month
-    workday_stats = get_month_workday_stats(today)
+    workday_stats = get_month_workday_stats(today, workdays_of_week)
     nominal_workdays_total = workday_stats['total']
     nominal_workdays_passed = workday_stats['passed']
     nominal_workdays_remaining = workday_stats['remaining']
@@ -717,7 +749,8 @@ def entries():
             monthly_take_home_goal=0.0,
             target_days_per_month=0,
             profit_quota=0.0,
-            loss_quota=0.0
+            loss_quota=0.0,
+            workdays_of_week='0,1,2,3,4'
         )
         db.session.add(settings)
         db.session.commit()
@@ -805,7 +838,8 @@ def add_entry():
             monthly_take_home_goal=0.0,
             target_days_per_month=0,
             profit_quota=0.0,
-            loss_quota=0.0
+            loss_quota=0.0,
+            workdays_of_week='0,1,2,3,4'
         )
         db.session.add(settings)
         db.session.commit()
@@ -946,6 +980,8 @@ def settings():
             settings_obj.profit_quota = 0.0
         if not hasattr(settings_obj, 'loss_quota') or settings_obj.loss_quota is None:
             settings_obj.loss_quota = 0.0
+        if not hasattr(settings_obj, 'workdays_of_week') or not settings_obj.workdays_of_week:
+            settings_obj.workdays_of_week = '0,1,2,3,4'
     
     # Get workers
     workers = Worker.query.filter_by(user_id=current_user.id).order_by(Worker.name).all()
@@ -1048,6 +1084,14 @@ def settings():
                 profit_quota = safe_float(request.form.get('profit_quota', ''))
                 loss_quota = safe_float(request.form.get('loss_quota', ''))
                 
+                # Get workdays of week (checkboxes)
+                workdays = request.form.getlist('workday')
+                if workdays:
+                    workdays_of_week = ','.join(sorted(workdays))
+                else:
+                    # Default to Mon-Fri if none selected
+                    workdays_of_week = '0,1,2,3,4'
+                
                 # Update settings
                 settings_obj.daily_revenue_goal = daily_revenue_goal
                 settings_obj.monthly_revenue_goal = monthly_revenue_goal
@@ -1055,6 +1099,8 @@ def settings():
                 settings_obj.target_days_per_month = target_days_per_month
                 settings_obj.profit_quota = profit_quota
                 settings_obj.loss_quota = loss_quota
+                if hasattr(settings_obj, 'workdays_of_week'):
+                    settings_obj.workdays_of_week = workdays_of_week
                 settings_obj.updated_at = datetime.utcnow()
                 
                 # Commit changes

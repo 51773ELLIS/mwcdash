@@ -92,6 +92,44 @@
             
             <div class="form-row">
                 <div class="form-group">
+                    <label>Work Days of Week</label>
+                    <div class="workdays-selector">
+                        {% set workdays_list = (settings.workdays_of_week|default('0,1,2,3,4')).split(',') %}
+                        <label class="workday-checkbox">
+                            <input type="checkbox" name="workday" value="0" {% if '0' in workdays_list %}checked{% endif %}>
+                            <span>Monday</span>
+                        </label>
+                        <label class="workday-checkbox">
+                            <input type="checkbox" name="workday" value="1" {% if '1' in workdays_list %}checked{% endif %}>
+                            <span>Tuesday</span>
+                        </label>
+                        <label class="workday-checkbox">
+                            <input type="checkbox" name="workday" value="2" {% if '2' in workdays_list %}checked{% endif %}>
+                            <span>Wednesday</span>
+                        </label>
+                        <label class="workday-checkbox">
+                            <input type="checkbox" name="workday" value="3" {% if '3' in workdays_list %}checked{% endif %}>
+                            <span>Thursday</span>
+                        </label>
+                        <label class="workday-checkbox">
+                            <input type="checkbox" name="workday" value="4" {% if '4' in workdays_list %}checked{% endif %}>
+                            <span>Friday</span>
+                        </label>
+                        <label class="workday-checkbox">
+                            <input type="checkbox" name="workday" value="5" {% if '5' in workdays_list %}checked{% endif %}>
+                            <span>Saturday</span>
+                        </label>
+                        <label class="workday-checkbox">
+                            <input type="checkbox" name="workday" value="6" {% if '6' in workdays_list %}checked{% endif %}>
+                            <span>Sunday</span>
+                        </label>
+                    </div>
+                    <small class="form-hint">Select which days of the week you work. Used for calculating "Required Daily Target".</small>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
                     <label for="profit_quota">Profit Quota ({{ settings.currency_symbol }})</label>
                     <input type="number" id="profit_quota" name="profit_quota" step="0.01" min="0" value="{{ settings.profit_quota|default(0) }}" placeholder="0.00">
                     <small class="form-hint">Minimum profit amount (take-home) to achieve</small>

@@ -18,11 +18,6 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="period-filters">
-                <button class="btn btn-sm" onclick="updateCharts('daily')">Daily</button>
-                <button class="btn btn-sm" onclick="updateCharts('weekly')">Weekly</button>
-                <button class="btn btn-sm" onclick="updateCharts('monthly')">Monthly</button>
-            </div>
             <div class="recent-entries-filter">
                 <label for="recent-period-select">Recent Avg Period:</label>
                 <select id="recent-period-select" class="form-select" onchange="updateRecentPeriod()" style="width: auto; display: inline-block; margin-left: 0.5rem;">
@@ -137,6 +132,17 @@
         <div class="stat-card">
             <h3>Avg Hourly Rate</h3>
             <p class="stat-value">{{ settings.currency_symbol }}{{ avg_hourly_rate|currency(2) }}</p>
+            <small>
+                {% if recent_period == '7days' %}
+                Last 7 Days
+                {% elif recent_period == 'thismonth' %}
+                This Month
+                {% elif recent_period == '3months' %}
+                Last 3 Months
+                {% else %}
+                Last 7 Days
+                {% endif %}
+            </small>
         </div>
         {% if best_day %}
         <div class="stat-card stat-card-highlight">
