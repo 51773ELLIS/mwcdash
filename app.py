@@ -121,8 +121,12 @@ def init_db():
         
         # Create default user if no users exist
         if User.query.count() == 0:
-            default_user = User(username='ellis')
-            default_user.set_password('changeme')  # Change this in production!
+            # Allow bootstrap credentials to be overridden via environment variables
+            default_username = os.environ.get('BOOTSTRAP_USERNAME', 'ellis')
+            default_password = os.environ.get('BOOTSTRAP_PASSWORD', 'changeme')
+
+            default_user = User(username=default_username)
+            default_user.set_password(default_password)  # Change this in production!
             db.session.add(default_user)
             db.session.flush()  # Ensure default_user.id is available for Settings FK
             
@@ -143,7 +147,7 @@ def init_db():
             )
             db.session.add(default_settings)
             db.session.commit()
-            print("Default user created: username='ellis', password='changeme'")
+            print(f"Default user created: username='{default_username}', password set from environment or default.")
 
 
 @app.route('/')
