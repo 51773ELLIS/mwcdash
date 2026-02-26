@@ -179,6 +179,7 @@ def login():
         return redirect(url_for('dashboard'))
 
     bootstrap_username = os.environ.get('BOOTSTRAP_USERNAME', 'ellis')
+    bootstrap_password_hint = 'changeme' if 'BOOTSTRAP_PASSWORD' not in os.environ else 'the BOOTSTRAP_PASSWORD value'
 
     if request.method == 'POST':
         username = request.form.get('username')
@@ -186,7 +187,7 @@ def login():
 
         if not username or not password:
             flash('Please provide both username and password.', 'error')
-            return render_template('login.html', bootstrap_username=bootstrap_username)
+            return render_template('login.html', bootstrap_username=bootstrap_username, bootstrap_password_hint=bootstrap_password_hint)
 
         user = User.query.filter_by(username=username).first()
 
@@ -197,7 +198,7 @@ def login():
         else:
             flash('Invalid username or password.', 'error')
 
-    return render_template('login.html', bootstrap_username=bootstrap_username)
+    return render_template('login.html', bootstrap_username=bootstrap_username, bootstrap_password_hint=bootstrap_password_hint)
 
 
 @app.route('/logout')

@@ -646,13 +646,6 @@ body::before {
         background-position: 1000px 0;
     }
 }
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
 .login-help {
     margin: 0 0 var(--spacing-md);
