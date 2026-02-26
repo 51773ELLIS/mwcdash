@@ -125,7 +125,7 @@ def init_db():
             default_username = os.environ.get('BOOTSTRAP_USERNAME', 'ellis')
             default_password = os.environ.get('BOOTSTRAP_PASSWORD', 'changeme')
 
-            default_user = User(username=default_username)
+            default_user = User(username=default_username, is_admin=True)
             default_user.set_password(default_password)  # Change this in production!
             db.session.add(default_user)
             db.session.flush()  # Ensure default_user.id is available for Settings FK
@@ -147,7 +147,7 @@ def init_db():
             )
             db.session.add(default_settings)
             db.session.commit()
-            print(f"Default user created: username='{default_username}', password set from environment or default.")
+            print(f"Default admin user created: username='{default_username}', password set from environment or default.")
 
 
 @app.route('/')
@@ -191,6 +191,47 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
+
+
+def admin_required(f):
+    """Decorator to restrict routes to admin users only"""
+    from functools import wraps
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not getattr(current_user, 'is_admin', False):
+            flash('You do not have permission to access this page.', 'error')
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+@app.route('/admin/users', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def manage_users():
+    """Admin-only user management page"""
+    if request.method == 'POST':
+        # Create a new user
+        new_username = request.form.get('username', '').strip()
+        new_password = request.form.get('password', '').strip()
+
+        if not new_username or not new_password:
+            flash('Username and password are required to create a user.', 'error')
+        else:
+            existing = User.query.filter_by(username=new_username).first()
+            if existing:
+                flash('A user with that username already exists.', 'error')
+            else:
+                user = User(username=new_username, is_admin=False)
+                user.set_password(new_password)
+                db.session.add(user)
+                db.session.commit()
+                flash(f"User '{new_username}' created successfully.", 'success')
+
+    users = User.query.order_by(User.created_at.asc()).all()
+    return render_template('admin_users.html', users=users)
 
 
 @app.route('/dashboard')
