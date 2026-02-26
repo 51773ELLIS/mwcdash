@@ -6,6 +6,7 @@
 <div class="login-container">
     <div class="login-box">
         <h2>Login</h2>
+        <p class="login-help">First-time login: <strong>{{ bootstrap_username }}</strong> / <strong>changeme</strong> (unless <code>BOOTSTRAP_USERNAME</code> or <code>BOOTSTRAP_PASSWORD</code> were set at startup).</p>
         <form method="POST" action="{{ url_for('login') }}">
             <div class="form-group">
                 <label for="username">Username</label>

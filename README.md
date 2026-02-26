@@ -102,8 +102,17 @@ python3 migrate_db.py
 ### 5. Create Default User
 
 The application will create a default user on first run:
-- **Username**: `ellis`
-- **Password**: `changeme`
+- **Username**: `ellis` (or `BOOTSTRAP_USERNAME` if set)
+- **Password**: `changeme` (or `BOOTSTRAP_PASSWORD` if set)
+
+You can customize the first-run login credentials before starting the app:
+
+```bash
+export BOOTSTRAP_USERNAME="myuser"
+export BOOTSTRAP_PASSWORD="mystrongpassword"
+```
+
+> These variables are only used when no users exist in the database yet.
 
 **IMPORTANT**: Change the default password immediately after first login!
 
@@ -147,6 +156,8 @@ You can also set environment variables:
 export SECRET_KEY="your-secret-key"
 export FLASK_ENV="production"
 export DATABASE_URL="sqlite:///database.db"
+export BOOTSTRAP_USERNAME="ellis"
+export BOOTSTRAP_PASSWORD="changeme"
 ```
 
 ## GitHub Webhook Auto-Deployment

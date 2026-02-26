@@ -48,6 +48,21 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in to access this page.'
 
+# Ensure init_db() only runs once per process (works for both flask run and python app.py)
+_db_initialized = False
+
+
+def ensure_db_initialized():
+    global _db_initialized
+    if not _db_initialized:
+        init_db()
+        _db_initialized = True
+
+
+@app.before_request
+def _initialize_database_once():
+    ensure_db_initialized()
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -118,13 +133,17 @@ def init_db():
                 print("Database tables created (first run).")
             except Exception as create_error:
                 print(f"Error creating tables: {create_error}")
-        
+
         # Create default user if no users exist
         if User.query.count() == 0:
-            default_user = User(username='ellis')
-            default_user.set_password('changeme')  # Change this in production!
+            bootstrap_username = os.environ.get('BOOTSTRAP_USERNAME', 'ellis')
+            bootstrap_password = os.environ.get('BOOTSTRAP_PASSWORD', 'changeme')
+
+            default_user = User(username=bootstrap_username)
+            default_user.set_password(bootstrap_password)
             db.session.add(default_user)
-            
+            db.session.flush()  # Ensure default_user.id is available for Settings FK
+
             # Create default settings
             default_settings = Settings(
                 user_id=default_user.id,
@@ -142,7 +161,7 @@ def init_db():
             )
             db.session.add(default_settings)
             db.session.commit()
-            print("Default user created: username='ellis', password='changeme'")
+            print(f"Default user created: username='{bootstrap_username}'. Set BOOTSTRAP_PASSWORD env var to customize password on first run.")
 
 
 @app.route('/')
@@ -158,25 +177,27 @@ def login():
     """Handle user login"""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
-    
+
+    bootstrap_username = os.environ.get('BOOTSTRAP_USERNAME', 'ellis')
+
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
+
         if not username or not password:
             flash('Please provide both username and password.', 'error')
-            return render_template('login.html')
-        
+            return render_template('login.html', bootstrap_username=bootstrap_username)
+
         user = User.query.filter_by(username=username).first()
-        
+
         if user and user.check_password(password):
             login_user(user, remember=True)
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password.', 'error')
-    
-    return render_template('login.html')
+
+    return render_template('login.html', bootstrap_username=bootstrap_username)
 
 
 @app.route('/logout')
@@ -1166,6 +1187,5 @@ def delete_worker(worker_id):
 
 
 if __name__ == '__main__':
-    init_db()
+    ensure_db_initialized()
     app.run(host='0.0.0.0', port=5050, debug=True)
-
