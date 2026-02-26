@@ -81,6 +81,7 @@
         </div>
     </div>
 
+    <h3 class="section-heading">Overview</h3>
     <div class="stats-grid">
         <div class="stat-card">
             <h3>Total Revenue</h3>
@@ -208,7 +209,7 @@
     <!-- Goals & Targets Section -->
     {% if (settings.daily_revenue_goal|default(0) > 0) or (settings.monthly_revenue_goal|default(0) > 0) or (settings.monthly_take_home_goal|default(0) > 0) or (settings.profit_quota|default(0) > 0) or (settings.loss_quota|default(0) > 0) %}
     <div class="goals-section">
-        <h2>Goals & Targets</h2>
+        <h3 class="section-heading">Goals</h3>
         
         <div class="goals-grid">
             {% if settings.daily_revenue_goal|default(0) > 0 %}
@@ -344,7 +345,7 @@
     {% endif %}
 
     <div class="breakdown-section">
-        <h3>Revenue Breakdown</h3>
+        <h3 class="section-heading">Insights – Revenue Breakdown</h3>
         <div class="breakdown-grid">
             <div class="breakdown-item">
                 <div class="breakdown-main">
@@ -379,29 +380,31 @@
         </div>
     </div>
 
+    <h3 class="section-heading">Trends</h3>
     <div class="charts-section">
         <div class="chart-container">
-            <h3>Revenue Over Time</h3>
+            <h4 class="chart-heading">Revenue over time</h4>
             <canvas id="revenueChart"></canvas>
         </div>
         <div class="chart-container">
-            <h3>Hours Worked</h3>
+            <h4 class="chart-heading">Hours worked</h4>
             <canvas id="hoursChart"></canvas>
         </div>
         <div class="chart-container">
-            <h3>Revenue vs Hours</h3>
+            <h4 class="chart-heading">Revenue vs hours</h4>
             <canvas id="revenueHoursChart"></canvas>
         </div>
     </div>
     
     {% if worker_stats|length > 0 %}
+    <h3 class="section-heading">Worker insights</h3>
     <div class="charts-section">
         <div class="chart-container">
-            <h3>Revenue by Worker</h3>
+            <h4 class="chart-heading">Revenue by worker</h4>
             <canvas id="workerRevenueChart"></canvas>
         </div>
         <div class="chart-container">
-            <h3>Hours by Worker</h3>
+            <h4 class="chart-heading">Hours by worker</h4>
             <canvas id="workerHoursChart"></canvas>
         </div>
     </div>
