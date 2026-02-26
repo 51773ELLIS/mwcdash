@@ -5,10 +5,15 @@
 {% block content %}
 <div class="dashboard">
     <div class="dashboard-header">
-        <h2>Dashboard</h2>
+        <div>
+            <h2>Dashboard</h2>
+            {% if selected_worker != 'all' %}
+            <p class="dashboard-subtitle">Viewing stats for <strong>{{ selected_worker }}</strong></p>
+            {% endif %}
+        </div>
         <div class="dashboard-controls">
             <div class="worker-filter">
-                <label for="worker-select">Filter by Worker:</label>
+                <label for="worker-select">Worker</label>
                 <select id="worker-select" class="form-select" onchange="filterByWorker()">
                     <option value="all" {% if selected_worker == 'all' %}selected{% endif %}>All Workers</option>
                     {% for worker in workers %}
@@ -19,13 +24,58 @@
                 </select>
             </div>
             <div class="recent-entries-filter">
-                <label for="recent-period-select">Recent Avg Period:</label>
-                <select id="recent-period-select" class="form-select" onchange="updateRecentPeriod()" style="width: auto; display: inline-block; margin-left: 0.5rem;">
+                <label for="recent-period-select">Recent Avg</label>
+                <select id="recent-period-select" class="form-select" onchange="updateRecentPeriod()">
                     <option value="7days" {% if recent_period == '7days' %}selected{% endif %}>Last 7 Days</option>
                     <option value="thismonth" {% if recent_period == 'thismonth' %}selected{% endif %}>This Month</option>
                     <option value="3months" {% if recent_period == '3months' %}selected{% endif %}>Last 3 Months</option>
                 </select>
             </div>
+        </div>
+    </div>
+
+    <!-- Mobile-first hero stats -->
+    <div class="hero-stats">
+        <div class="hero-card">
+            <h3>Today&apos;s Take-Home</h3>
+            <p class="hero-value">{{ settings.currency_symbol }}{{ daily_revenue * (settings.take_home_percent / 100) | currency(2) }}</p>
+            {% if settings.daily_revenue_goal|default(0) > 0 %}
+            <small>{{ settings.currency_symbol }}{{ settings.daily_revenue_goal|currency(2) }} goal • {{ "%.0f"|format(daily_goal_progress) }}%</small>
+            {% else %}
+            <small>No daily goal set</small>
+            {% endif %}
+        </div>
+        <div class="hero-card">
+            <h3>This Month Take-Home</h3>
+            <p class="hero-value">{{ settings.currency_symbol }}{{ monthly_take_home_amount|currency(2) }}</p>
+            {% if settings.monthly_take_home_goal|default(0) > 0 %}
+            <small>{{ settings.currency_symbol }}{{ settings.monthly_take_home_goal|currency(2) }} goal • {{ "%.0f"|format(monthly_take_home_goal_progress) }}%</small>
+            {% else %}
+            <small>No monthly goal set</small>
+            {% endif %}
+        </div>
+        <div class="hero-card">
+            <h3>Recent Avg / Day</h3>
+            <p class="hero-value">{{ settings.currency_symbol }}{{ recent_avg_take_home|currency(2) }}</p>
+            <small>
+                {% if recent_period == '7days' %}Last 7 days{% elif recent_period == 'thismonth' %}This month{% else %}Last 3 months{% endif %}
+            </small>
+        </div>
+        <div class="hero-card">
+            <h3>Required / Day</h3>
+            {% if settings.monthly_take_home_goal|default(0) <= 0 %}
+            <p class="hero-value">–</p>
+            <small>Set a monthly goal</small>
+            {% elif remaining_take_home_to_goal <= 0 %}
+            <p class="hero-value">0.00</p>
+            <small>Goal hit 🎉</small>
+            {% elif required_daily_take_home_target is not none %}
+            <p class="hero-value">{{ settings.currency_symbol }}{{ required_daily_take_home_target|currency(2) }}</p>
+            <small>{{ nominal_workdays_remaining }} workday{{ 's' if nominal_workdays_remaining != 1 else '' }} left</small>
+            {% else %}
+            <p class="hero-value">–</p>
+            <small>No workdays left</small>
+            {% endif %}
         </div>
     </div>
 

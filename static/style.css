@@ -246,6 +246,185 @@ body::before {
     animation: fadeIn 0.5s ease-out;
 }
 
+/* Dashboard Layout */
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.dashboard-header h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.dashboard-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.dashboard-controls {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.dashboard-controls .worker-filter,
+.dashboard-controls .recent-entries-filter {
+    min-width: 140px;
+}
+
+/* Hero stats - mobile-first key metrics */
+.hero-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-sm);
+}
+
+.hero-card {
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.hero-card h3 {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.hero-value {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.hero-card small {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Stat cards grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-sm);
+}
+
+.stat-card {
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-card h3 {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.stat-card small {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.stat-card-highlight {
+    border-color: rgba(16, 185, 129, 0.6);
+}
+
+.stat-card-warning {
+    border-color: rgba(245, 158, 11, 0.7);
+}
+
+/* Goals layout */
+.goals-section {
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+.goals-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+}
+
+/* Breakdown & charts */
+.breakdown-section {
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+.breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+}
+
+.charts-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+}
+
+.chart-container {
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+.chart-container canvas {
+    max-width: 100%;
+}
+
+/* Responsive breakpoints */
+@media (min-width: 640px) {
+    .hero-stats {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .goals-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .breakdown-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
 /* Flash Messages - Modern Toast Style */
 .flash-messages {
     margin-bottom: var(--spacing-md);
