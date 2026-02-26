@@ -124,6 +124,7 @@ def init_db():
             default_user = User(username='ellis')
             default_user.set_password('changeme')  # Change this in production!
             db.session.add(default_user)
+            db.session.flush()  # Ensure default_user.id is available for Settings FK
             
             # Create default settings
             default_settings = Settings(
@@ -1168,4 +1169,3 @@ def delete_worker(worker_id):
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=5050, debug=True)
-
