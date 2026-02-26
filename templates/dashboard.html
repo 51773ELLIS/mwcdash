@@ -38,7 +38,9 @@
     <div class="hero-stats">
         <div class="hero-card">
             <h3>Today&apos;s Take-Home</h3>
-            <p class="hero-value">{{ settings.currency_symbol }}{{ daily_revenue * (settings.take_home_percent / 100) | currency(2) }}</p>
+            {# daily_revenue is a number server-side; ensure arithmetic happens before formatting #}
+            {% set todays_take_home = (daily_revenue or 0) * ((settings.take_home_percent or 0) / 100) %}
+            <p class="hero-value">{{ settings.currency_symbol }}{{ todays_take_home|currency(2) }}</p>
             {% if settings.daily_revenue_goal|default(0) > 0 %}
             <small>{{ settings.currency_symbol }}{{ settings.daily_revenue_goal|currency(2) }} goal • {{ "%.0f"|format(daily_goal_progress) }}%</small>
             {% else %}
