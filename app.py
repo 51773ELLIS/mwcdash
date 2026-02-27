@@ -511,6 +511,9 @@ def dashboard():
     monthly_take_home_goal = getattr(settings, 'monthly_take_home_goal', 0.0)
     if monthly_take_home_goal is None:
         monthly_take_home_goal = 0.0
+
+    target_hourly_rate = getattr(settings, 'target_hourly_rate', 0.0) or 0.0
+    avg_hourly_vs_target = avg_hourly_rate - target_hourly_rate
     
     daily_goal_progress = (daily_revenue / daily_revenue_goal * 100) if daily_revenue_goal > 0 else 0.0
     monthly_goal_progress = (monthly_revenue / monthly_revenue_goal * 100) if monthly_revenue_goal > 0 else 0.0
