@@ -487,12 +487,10 @@ def dashboard():
     annual_take_home_forecast = monthly_take_home_for_forecast * 12
 
     # Capacity & utilisation (simple model: 8h per nominal workday)
-    capacity_hours_month = nominal_workdays_total * 8.0
-    utilisation_pct = (total_hours / capacity_hours_month * 100) if capacity_hours_month > 0 else 0.0
+    # Guard against cases where workday_stats haven't been computed yet
+    capacity_hours_month = 0.0
+    utilisation_pct = 0.0
 
-    target_hourly_rate = getattr(settings, 'target_hourly_rate', 0.0) or 0.0
-    avg_hourly_vs_target = avg_hourly_rate - target_hourly_rate
-    
     # Goal progress calculations (with safe attribute access)
     daily_revenue_goal = getattr(settings, 'daily_revenue_goal', 0.0)
     if daily_revenue_goal is None:
@@ -550,7 +548,11 @@ def dashboard():
     nominal_workdays_total = workday_stats['total']
     nominal_workdays_passed = workday_stats['passed']
     nominal_workdays_remaining = workday_stats['remaining']
-    
+
+    # After we know nominal_workdays_total, we can compute capacity/utilisation
+    capacity_hours_month = nominal_workdays_total * 8.0
+    utilisation_pct = (total_hours / capacity_hours_month * 100) if capacity_hours_month > 0 else 0.0
+
     # Calculate days needed to achieve monthly take-home goal
     days_needed_for_goal = None
     remaining_take_home_needed = 0.0
