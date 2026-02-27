@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Workers - Earnings Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <div>
+            <h2>Workers</h2>
+            <p class="dashboard-subtitle">Performance overview ({{ period_label }})</p>
+        </div>
+        <div class="dashboard-controls">
+            <div class="recent-entries-filter">
+                <label for="period-select">Period</label>
+                <select id="period-select" class="form-select" onchange="changePeriod()">
+                    <option value="thismonth" {% if period == 'thismonth' %}selected{% endif %}>This Month</option>
+                    <option value="7days" {% if period == '7days' %}selected{% endif %}>Last 7 Days</option>
+                    <option value="3months" {% if period == '3months' %}selected{% endif %}>Last 3 Months</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-stats">
+        <div class="hero-card">
+            <h3>Total Revenue ({{ period_label }})</h3>
+            <p class="hero-value">£{{ total_revenue|currency(2) }}</p>
+        </div>
+        <div class="hero-card">
+            <h3>This Month vs Last Month</h3>
+            <p class="hero-value">£{{ current_month_revenue|currency(2) }}</p>
+            <small>
+                {% if previous_month_revenue > 0 %}
+                    {% if month_change > 0 %}↑{% elif month_change < 0 %}↓{% else %}→{% endif %}
+                    {{ "%.1f"|format(month_change_pct) }}% vs last month
+                {% else %}
+                    No data for last month
+                {% endif %}
+            </small>
+        </div>
+    </div>
+
+    <h3 class="section-heading">Worker performance</h3>
+
+    <div class="workers-grid">
+        {% for w in workers %}
+        <div class="worker-card">
+            <div class="worker-header">
+                <h3>{{ w.name }}</h3>
+                <span class="worker-pill">
+                    {% if w.revenue_per_hour >= 50 %}
+                        Top performer
+                    {% elif w.revenue_per_hour >= 25 %}
+                        Solid
+                    {% else %}
+                        Developing
+                    {% endif %}
+                </span>
+            </div>
+            <div class="worker-metrics">
+                <div class="worker-metric">
+                    <span class="label">Revenue</span>
+                    <span class="value">£{{ w.revenue|currency(2) }}</span>
+                </div>
+                <div class="worker-metric">
+                    <span class="label">Hours</span>
+                    <span class="value">{{ w.hours|number(1) }}h</span>
+                </div>
+                <div class="worker-metric">
+                    <span class="label">£ / hour</span>
+                    <span class="value">£{{ w.revenue_per_hour|currency(2) }}</span>
+                </div>
+                <div class="worker-metric">
+                    <span class="label">Days worked</span>
+                    <span class="value">{{ w.days_worked }}</span>
+                </div>
+                <div class="worker-metric">
+                    <span class="label">Avg daily revenue</span>
+                    <span class="value">£{{ w.avg_daily_revenue|currency(2) }}</span>
+                </div>
+                <div class="worker-metric">
+                    <span class="label">Share of total</span>
+                    <span class="value">{{ "%.1f"|format(w.share_of_total) }}%</span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p>No worker data for this period yet.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function changePeriod() {
+    const period = document.getElementById('period-select').value;
+    const url = new URL(window.location.href);
+    url.searchParams.set('period', period);
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

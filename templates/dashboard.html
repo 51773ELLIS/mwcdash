@@ -206,6 +206,39 @@
         {% endif %}
     </div>
 
+    {% if worker_stats|length > 0 %}
+    <h3 class="section-heading">Top workers (this month)</h3>
+    <div class="workers-grid">
+        {% set monthly_worker_totals = {} %}
+        {% for entry in worker_entries if False %}{% endfor %}
+        {% for worker_name, stats in worker_stats.items() %}
+        {# worker_stats already contains revenue/hours per worker; sort on server in future if needed #}
+        {% endfor %}
+        {% for worker_name, stats in worker_stats.items()|list|sort(attribute='1', reverse=true)[:3] %}
+        <div class="worker-card">
+            <div class="worker-header">
+                <h3>{{ worker_name }}</h3>
+                <span class="worker-pill">Top worker</span>
+            </div>
+            <div class="worker-metrics">
+                <div class="worker-metric">
+                    <span class="label">Revenue</span>
+                    <span class="value">{{ settings.currency_symbol }}{{ stats.revenue|currency(2) }}</span>
+                </div>
+                <div class="worker-metric">
+                    <span class="label">Hours</span>
+                    <span class="value">{{ stats.hours|number(1) }}h</span>
+                </div>
+                <div class="worker-metric">
+                    <span class="label">Entries</span>
+                    <span class="value">{{ stats.count }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Goals & Targets Section -->
     {% if (settings.daily_revenue_goal|default(0) > 0) or (settings.monthly_revenue_goal|default(0) > 0) or (settings.monthly_take_home_goal|default(0) > 0) or (settings.profit_quota|default(0) > 0) or (settings.loss_quota|default(0) > 0) %}
     <div class="goals-section">

@@ -1211,6 +1211,108 @@ def delete_worker(worker_id):
     return redirect(url_for('settings'))
 
 
+@app.route('/workers')
+@login_required
+def workers_view():
+    """Worker performance overview"""
+    # Period filter (reuse dashboard periods)
+    period = request.args.get('period', 'thismonth')
+    today = date.today()
+    if period == '7days':
+        start_date = today - timedelta(days=6)
+        period_label = 'Last 7 Days'
+    elif period == '3months':
+        if today.month >= 3:
+            start_date = date(today.year, today.month - 2, 1)
+        else:
+            start_date = date(today.year - 1, 12 + today.month - 2, 1)
+        period_label = 'Last 3 Months'
+    else:
+        # default: this month
+        start_date = date(today.year, today.month, 1)
+        period_label = 'This Month'
+
+    # Base query
+    entries_q = Entry.query.filter(
+        Entry.user_id == current_user.id,
+        Entry.date >= start_date,
+        Entry.date <= today
+    )
+    entries = entries_q.all()
+
+    # Aggregate per worker
+    worker_perf = {}
+    total_revenue = 0.0
+    for e in entries:
+        name = e.worker_name or 'Unassigned'
+        wp = worker_perf.setdefault(name, {
+            'revenue': 0.0,
+            'hours': 0.0,
+            'days': set(),
+        })
+        wp['revenue'] += e.revenue
+        wp['hours'] += e.hours
+        wp['days'].add(e.date)
+        total_revenue += e.revenue
+
+    # Compute derived metrics
+    for name, wp in worker_perf.items():
+        days_worked = len(wp['days']) or 0
+        revenue = wp['revenue']
+        hours = wp['hours'] or 0.0
+        wp['days_worked'] = days_worked
+        wp['avg_daily_revenue'] = revenue / days_worked if days_worked > 0 else 0.0
+        wp['revenue_per_hour'] = revenue / hours if hours > 0 else 0.0
+        wp['share_of_total'] = (revenue / total_revenue * 100) if total_revenue > 0 else 0.0
+
+    # Build list sorted by revenue
+    worker_rows = []
+    for name, wp in worker_perf.items():
+        worker_rows.append({
+            'name': name,
+            'revenue': wp['revenue'],
+            'hours': wp['hours'],
+            'days_worked': wp['days_worked'],
+            'avg_daily_revenue': wp['avg_daily_revenue'],
+            'revenue_per_hour': wp['revenue_per_hour'],
+            'share_of_total': wp['share_of_total'],
+        })
+
+    worker_rows.sort(key=lambda w: w['revenue'], reverse=True)
+
+    # Compute month-over-month revenue change for context
+    current_month_start = date(today.year, today.month, 1)
+    prev_month_end = current_month_start - timedelta(days=1)
+    prev_month_start = date(prev_month_end.year, prev_month_end.month, 1)
+
+    curr_rev_q = Entry.query.filter(
+        Entry.user_id == current_user.id,
+        Entry.date >= current_month_start,
+        Entry.date <= today
+    )
+    prev_rev_q = Entry.query.filter(
+        Entry.user_id == current_user.id,
+        Entry.date >= prev_month_start,
+        Entry.date <= prev_month_end
+    )
+    current_month_revenue = sum(e.revenue for e in curr_rev_q.all())
+    previous_month_revenue = sum(e.revenue for e in prev_rev_q.all())
+    month_change = current_month_revenue - previous_month_revenue
+    month_change_pct = (month_change / previous_month_revenue * 100) if previous_month_revenue > 0 else 0.0
+
+    return render_template(
+        'workers.html',
+        workers=worker_rows,
+        period=period,
+        period_label=period_label,
+        total_revenue=total_revenue,
+        current_month_revenue=current_month_revenue,
+        previous_month_revenue=previous_month_revenue,
+        month_change=month_change,
+        month_change_pct=month_change_pct,
+    )
+
+
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=5050, debug=True)
