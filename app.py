@@ -629,7 +629,24 @@ def dashboard():
     
     # Get workers for filter dropdown
     workers = Worker.query.filter_by(user_id=current_user.id).order_by(Worker.name).all()
-    
+
+    # Compute simple team tier summary for dashboard based on target thresholds
+    top_threshold_pct = getattr(settings, 'top_threshold_pct', 100.0) or 100.0
+    solid_threshold_pct = getattr(settings, 'solid_threshold_pct', 75.0) or 75.0
+    team_top = team_solid = team_developing = 0
+    if target_hourly_rate > 0 and worker_stats:
+        for name, stats in worker_stats.items():
+            hours = stats['hours'] or 0.0
+            if hours <= 0:
+                continue
+            rph = stats['revenue'] / hours
+            if rph >= target_hourly_rate * (top_threshold_pct / 100.0):
+                team_top += 1
+            elif rph >= target_hourly_rate * (solid_threshold_pct / 100.0):
+                team_solid += 1
+            else:
+                team_developing += 1
+
     return render_template('dashboard.html',
                          total_revenue=total_revenue,
                          total_hours=total_hours,
@@ -679,7 +696,10 @@ def dashboard():
                          capacity_hours_month=capacity_hours_month,
                          utilisation_pct=utilisation_pct,
                          target_hourly_rate=target_hourly_rate,
-                         avg_hourly_vs_target=avg_hourly_vs_target)
+                         avg_hourly_vs_target=avg_hourly_vs_target,
+                         team_top=team_top,
+                         team_solid=team_solid,
+                         team_developing=team_developing)
 
 
 @app.route('/api/chart_data')

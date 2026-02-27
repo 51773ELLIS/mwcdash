@@ -96,6 +96,16 @@
             <small>Set target hourly rate in Settings</small>
             {% endif %}
         </div>
+        <div class="hero-card">
+            <h3>Team performance</h3>
+            {% if target_hourly_rate > 0 and (team_top + team_solid + team_developing) > 0 %}
+            <p class="hero-value">{{ team_top }} / {{ team_solid }} / {{ team_developing }}</p>
+            <small>Top / Solid / Developing</small>
+            {% else %}
+            <p class="hero-value">–</p>
+            <small>Set target hourly rate to see team tiers</small>
+            {% endif %}
+        </div>
     </div>
 
     <h3 class="section-heading">Overview</h3>
