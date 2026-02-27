@@ -147,6 +147,20 @@
                     <input type="number" id="target_hourly_rate" name="target_hourly_rate" step="0.01" min="0" value="{{ settings.target_hourly_rate|default(0) }}" placeholder="0.00">
                     <small class="form-hint">Ideal average billable rate for the business</small>
                 </div>
+                <div class="form-group">
+                    <label>Performance Tier Thresholds (% of target)</label>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="top_threshold_pct">Top Performer ≥</label>
+                            <input type="number" id="top_threshold_pct" name="top_threshold_pct" step="1" min="0" max="300" value="{{ settings.top_threshold_pct|default(100) }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="solid_threshold_pct">Solid ≥</label>
+                            <input type="number" id="solid_threshold_pct" name="solid_threshold_pct" step="1" min="0" max="300" value="{{ settings.solid_threshold_pct|default(75) }}">
+                        </div>
+                    </div>
+                    <small class="form-hint">Workers below the "Solid" threshold are marked as Developing.</small>
+                </div>
             </div>
             
             <div class="form-actions">

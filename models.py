@@ -91,6 +91,9 @@ class Settings(db.Model):
     
     # Target hourly rate for the business (for utilisation/performance comparisons)
     target_hourly_rate = db.Column(db.Float, default=0.0, nullable=False)
+    # Performance tier thresholds as % of target hourly rate
+    top_threshold_pct = db.Column(db.Float, default=100.0, nullable=False)
+    solid_threshold_pct = db.Column(db.Float, default=75.0, nullable=False)
     
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

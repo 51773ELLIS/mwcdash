@@ -1166,6 +1166,8 @@ def settings():
                 profit_quota = safe_float(request.form.get('profit_quota', ''))
                 loss_quota = safe_float(request.form.get('loss_quota', ''))
                 target_hourly_rate = safe_float(request.form.get('target_hourly_rate', ''))
+                top_threshold_pct = safe_float(request.form.get('top_threshold_pct', '100'))
+                solid_threshold_pct = safe_float(request.form.get('solid_threshold_pct', '75'))
                 
                 # Get workdays of week (checkboxes)
                 workdays = request.form.getlist('workday')
@@ -1183,6 +1185,8 @@ def settings():
                 settings_obj.profit_quota = profit_quota
                 settings_obj.loss_quota = loss_quota
                 settings_obj.target_hourly_rate = target_hourly_rate
+                settings_obj.top_threshold_pct = top_threshold_pct
+                settings_obj.solid_threshold_pct = solid_threshold_pct
                 if hasattr(settings_obj, 'workdays_of_week'):
                     settings_obj.workdays_of_week = workdays_of_week
                 settings_obj.updated_at = datetime.utcnow()
