@@ -81,6 +81,23 @@
         </div>
     </div>
 
+    <div class="hero-stats" style="margin-top: var(--spacing-sm);">
+        <div class="hero-card">
+            <h3>Utilisation</h3>
+            <p class="hero-value">{{ "%.0f"|format(utilisation_pct) }}%</p>
+            <small>{{ total_hours|number(1) }}h / {{ capacity_hours_month|number(0) }}h capacity</small>
+        </div>
+        <div class="hero-card">
+            <h3>Avg £/hour vs target</h3>
+            <p class="hero-value">£{{ avg_hourly_rate|currency(2) }}</p>
+            {% if target_hourly_rate > 0 %}
+            <small>Target £{{ target_hourly_rate|currency(2) }} (Δ £{{ avg_hourly_vs_target|currency(2) }})</small>
+            {% else %}
+            <small>Set target hourly rate in Settings</small>
+            {% endif %}
+        </div>
+    </div>
+
     <h3 class="section-heading">Overview</h3>
     <div class="stats-grid">
         <div class="stat-card">

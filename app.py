@@ -485,6 +485,13 @@ def dashboard():
     annual_tax_forecast = monthly_tax * 12
     annual_reinvest_forecast = monthly_reinvest * 12
     annual_take_home_forecast = monthly_take_home_for_forecast * 12
+
+    # Capacity & utilisation (simple model: 8h per nominal workday)
+    capacity_hours_month = nominal_workdays_total * 8.0
+    utilisation_pct = (total_hours / capacity_hours_month * 100) if capacity_hours_month > 0 else 0.0
+
+    target_hourly_rate = getattr(settings, 'target_hourly_rate', 0.0) or 0.0
+    avg_hourly_vs_target = avg_hourly_rate - target_hourly_rate
     
     # Goal progress calculations (with safe attribute access)
     daily_revenue_goal = getattr(settings, 'daily_revenue_goal', 0.0)
@@ -668,7 +675,11 @@ def dashboard():
                          recent_avg_take_home=recent_avg_take_home,
                          annual_tax_forecast=annual_tax_forecast,
                          annual_reinvest_forecast=annual_reinvest_forecast,
-                         annual_take_home_forecast=annual_take_home_forecast)
+                         annual_take_home_forecast=annual_take_home_forecast,
+                         capacity_hours_month=capacity_hours_month,
+                         utilisation_pct=utilisation_pct,
+                         target_hourly_rate=target_hourly_rate,
+                         avg_hourly_vs_target=avg_hourly_vs_target)
 
 
 @app.route('/api/chart_data')
@@ -1154,6 +1165,7 @@ def settings():
                 target_days_per_month = int(safe_float(request.form.get('target_days_per_month', '')))
                 profit_quota = safe_float(request.form.get('profit_quota', ''))
                 loss_quota = safe_float(request.form.get('loss_quota', ''))
+                target_hourly_rate = safe_float(request.form.get('target_hourly_rate', ''))
                 
                 # Get workdays of week (checkboxes)
                 workdays = request.form.getlist('workday')
@@ -1170,6 +1182,7 @@ def settings():
                 settings_obj.target_days_per_month = target_days_per_month
                 settings_obj.profit_quota = profit_quota
                 settings_obj.loss_quota = loss_quota
+                settings_obj.target_hourly_rate = target_hourly_rate
                 if hasattr(settings_obj, 'workdays_of_week'):
                     settings_obj.workdays_of_week = workdays_of_week
                 settings_obj.updated_at = datetime.utcnow()
@@ -1267,8 +1280,13 @@ def workers_view():
 
     # Build list sorted by revenue
     worker_rows = []
+    underperformers = []
+    # Simple threshold for underperformance: below 75% of target_hourly_rate (if set) or <25 £/h
+    target_hourly_rate = getattr(Settings.query.filter_by(user_id=current_user.id).first(), 'target_hourly_rate', 0.0) or 0.0
+    perf_threshold = target_hourly_rate * 0.75 if target_hourly_rate > 0 else 25.0
+
     for name, wp in worker_perf.items():
-        worker_rows.append({
+        row = {
             'name': name,
             'revenue': wp['revenue'],
             'hours': wp['hours'],
@@ -1276,9 +1294,13 @@ def workers_view():
             'avg_daily_revenue': wp['avg_daily_revenue'],
             'revenue_per_hour': wp['revenue_per_hour'],
             'share_of_total': wp['share_of_total'],
-        })
+        }
+        worker_rows.append(row)
+        if row['revenue_per_hour'] < perf_threshold and row['hours'] > 0:
+            underperformers.append(row)
 
     worker_rows.sort(key=lambda w: w['revenue'], reverse=True)
+    underperformers.sort(key=lambda w: w['revenue_per_hour'])
 
     # Compute month-over-month revenue change for context
     current_month_start = date(today.year, today.month, 1)
@@ -1303,6 +1325,7 @@ def workers_view():
     return render_template(
         'workers.html',
         workers=worker_rows,
+        underperformers=underperformers,
         period=period,
         period_label=period_label,
         total_revenue=total_revenue,
@@ -1310,6 +1333,8 @@ def workers_view():
         previous_month_revenue=previous_month_revenue,
         month_change=month_change,
         month_change_pct=month_change_pct,
+        target_hourly_rate=target_hourly_rate,
+        perf_threshold=perf_threshold,
     )
 
 

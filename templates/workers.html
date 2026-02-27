@@ -42,18 +42,32 @@
 
     <h3 class="section-heading">Worker performance</h3>
 
+    {% if target_hourly_rate > 0 %}
+    <p class="dashboard-subtitle">Target hourly rate: £{{ target_hourly_rate|currency(2) }} / hour</p>
+    {% endif %}
+
     <div class="workers-grid">
         {% for w in workers %}
         <div class="worker-card">
             <div class="worker-header">
                 <h3>{{ w.name }}</h3>
                 <span class="worker-pill">
-                    {% if w.revenue_per_hour >= 50 %}
-                        Top performer
-                    {% elif w.revenue_per_hour >= 25 %}
-                        Solid
+                    {% if target_hourly_rate > 0 %}
+                        {% if w.revenue_per_hour >= target_hourly_rate %}
+                            Top performer
+                        {% elif w.revenue_per_hour >= target_hourly_rate * 0.75 %}
+                            Solid
+                        {% else %}
+                            Developing
+                        {% endif %}
                     {% else %}
-                        Developing
+                        {% if w.revenue_per_hour >= 50 %}
+                            Top performer
+                        {% elif w.revenue_per_hour >= 25 %}
+                            Solid
+                        {% else %}
+                            Developing
+                        {% endif %}
                     {% endif %}
                 </span>
             </div>
@@ -68,7 +82,7 @@
                 </div>
                 <div class="worker-metric">
                     <span class="label">£ / hour</span>
-                    <span class="value">£{{ w.revenue_per_hour|currency(2) }}</span>
+                    <span class="value">£{{ w.revenue_per_hour|currency(2) }}{% if target_hourly_rate > 0 %} ({{ "%.0f"|format((w.revenue_per_hour / target_hourly_rate * 100) if target_hourly_rate > 0 else 0) }}% of target){% endif %}</span>
                 </div>
                 <div class="worker-metric">
                     <span class="label">Days worked</span>
@@ -88,6 +102,34 @@
         <p>No worker data for this period yet.</p>
         {% endfor %}
     </div>
+
+    {% if underperformers|length > 0 %}
+    <h3 class="section-heading">Needs attention</h3>
+    <div class="workers-grid">
+        {% for w in underperformers %}
+        <div class="worker-card">
+            <div class="worker-header">
+                <h3>{{ w.name }}</h3>
+                <span class="worker-pill">Below target</span>
+            </div>
+            <div class="worker-metrics">
+                <div class="worker-metric">
+                    <span class="label">£ / hour</span>
+                    <span class="value">£{{ w.revenue_per_hour|currency(2) }}</span>
+                </div>
+                <div class="worker-metric">
+                    <span class="label">Hours</span>
+                    <span class="value">{{ w.hours|number(1) }}h</span>
+                </div>
+                <div class="worker-metric">
+                    <span class="label">Revenue</span>
+                    <span class="value">£{{ w.revenue|currency(2) }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 
 <script>

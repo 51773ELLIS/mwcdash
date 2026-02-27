@@ -89,6 +89,9 @@ class Settings(db.Model):
     loss_quota = db.Column(db.Float, default=0.0, nullable=False)  # Maximum acceptable loss
     workdays_of_week = db.Column(db.String(20), default='0,1,2,3,4', nullable=False)  # Days of week worked (0=Mon, 6=Sun), comma-separated
     
+    # Target hourly rate for the business (for utilisation/performance comparisons)
+    target_hourly_rate = db.Column(db.Float, default=0.0, nullable=False)
+    
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
